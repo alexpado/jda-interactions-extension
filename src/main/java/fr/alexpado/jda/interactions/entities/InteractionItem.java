@@ -5,6 +5,8 @@ import fr.alexpado.jda.interactions.annotations.Interact;
 import fr.alexpado.jda.interactions.annotations.Option;
 import fr.alexpado.jda.interactions.annotations.Param;
 import fr.alexpado.jda.interactions.exceptions.InteractionDeclarationException;
+import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import fr.alexpado.jda.interactions.interfaces.interactions.InteractionManager;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponse;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.Interaction;
@@ -26,7 +28,6 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
     private final InteractionMeta        meta;
     private final Predicate<Interaction> filter;
     private final List<Option>           options;
-    private final boolean                hideResult;
 
     /**
      * Create a new {@link InteractionItem} instance.
@@ -51,8 +52,6 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
             return targetAllowed && typeAllowed;
         };
 
-        this.hideResult = interact.isHidden();
-
         if (!this.method.getReturnType().equals(InteractionResponse.class)) {
             throw new InteractionDeclarationException(instance.getClass(), method, this.getName(), "The method does not return the InteractionResult class.");
         }
@@ -65,6 +64,19 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Execute this {@link ExecutableItem} with the provided parameters.
+     *
+     * @param event
+     *         The {@link DispatchEvent} that allowed to match this {@link ExecutableItem}.
+     * @param mapping
+     *         The dependency mapping set through {@link InteractionManager#registerMapping(Class, Function)}.
+     *
+     * @return An {@link InteractionResponse} implementation.
+     *
+     * @throws Exception
+     *         Threw if something happen during the execution. Implementation dependent.
+     */
     @Override
     public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) throws Exception {
 
@@ -103,23 +115,38 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
         throw new InteractionDeclarationException(this.instance.getClass(), this.method, this.getName(), "Unsupported return type (" + returnType + ")");
     }
 
+    /**
+     * Check if this {@link InteractionItem} can be used with the given {@link Interaction}. This is useful if you want
+     * to restrict some actions to some guilds.
+     *
+     * @param interaction
+     *         The Discord {@link Interaction}.
+     *
+     * @return True if executable, false otherwise.
+     */
     @Override
     public boolean canExecute(Interaction interaction) {
 
         return this.filter.test(interaction);
     }
 
-    public boolean isHidden() {
-
-        return this.hideResult;
-    }
-
+    /**
+     * Retrieves this {@link InteractionItem}'s {@link InteractionMeta}.
+     *
+     * @return The {@link InteractionItem}'s {@link InteractionMeta}.
+     */
     @Override
     public InteractionMeta getMeta() {
 
         return this.meta;
     }
 
+    /**
+     * Retrieves this {@link InteractionItem}'s URI as string.
+     *
+     * @return The {@link InteractionItem}'s URI.
+     */
+    @Override
     public String getPath() {
 
         return this.meta.getMetaName();

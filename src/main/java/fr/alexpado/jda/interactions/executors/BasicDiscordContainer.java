@@ -75,8 +75,18 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
         this.dataMap.values().forEach(InteractionCommandData::prepare);
     }
 
+    /**
+     * Build this {@link InteractionContainer} and add all {@link InteractionItem} having their interaction type set to
+     * {@link InteractionType#SLASH} as Discord Slash Commands.
+     *
+     * @param updateAction
+     *         The {@link CommandListUpdateAction} to use to register slash commands.
+     *
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
+     *         CommandListUpdateAction#queue()}.
+     */
     @Override
-    public final CommandListUpdateAction build(CommandListUpdateAction updateAction) {
+    public CommandListUpdateAction build(CommandListUpdateAction updateAction) {
 
         this.preprocess();
         for (InteractionCommandData value : this.dataMap.values()) {
@@ -88,20 +98,44 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
         return updateAction;
     }
 
+    /**
+     * Get all {@link InteractionItem} present in this {@link InteractionContainer}.
+     *
+     * @return A list of {@link InteractionItem}.
+     */
     @Override
     public List<InteractionItem> getInteractionItems() {
 
         return this.items;
     }
 
+    /**
+     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be
+     * called.
+     *
+     * The object must have at least one public method annotated with {@link Interact} for this call to serve a
+     * purpose.
+     *
+     * @param holder
+     *         The object to add.
+     */
     @Override
-    public final <T> void registerInteraction(T commandHolder) {
+    public void registerInteraction(Object holder) {
 
-        this.candidates.add(commandHolder);
+        this.candidates.add(holder);
     }
 
+    /**
+     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple
+     * interaction on-the-fly without bothering with annotations.
+     *
+     * @param meta
+     *         The {@link InteractionMeta} of the new interaction.
+     * @param item
+     *         The {@link ExecutableItem} to use when executing the interaction.
+     */
     @Override
-    public final void registerInteraction(InteractionMeta meta, ExecutableItem item) {
+    public void registerInteraction(InteractionMeta meta, ExecutableItem item) {
 
         String name   = meta.getName();
         String prefix = Arrays.asList(name.split("/")).get(0);
@@ -141,20 +175,42 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
         });
     }
 
+    /**
+     * Register a new {@link InteractionItem}.
+     *
+     * @param item
+     *         The {@link InteractionItem}.
+     */
     @Override
-    public final void registerInteraction(InteractionItem item) {
+    public void registerInteraction(InteractionItem item) {
 
         this.preItems.add(item);
     }
 
+    /**
+     * Check if this {@link InteractionExecutor} can be used to retrieve an {@link ExecutableItem} with the given URI.
+     *
+     * @param uri
+     *         The {@link ExecutableItem} URI.
+     *
+     * @return True if this {@link InteractionExecutor} can handle the request.
+     */
     @Override
-    public final boolean canResolve(URI uri) {
+    public boolean canResolve(URI uri) {
 
         return uri.getScheme().equals("button") || uri.getScheme().equals("slash");
     }
 
+    /**
+     * Try to match an {@link ExecutableItem} with the provided URI.
+     *
+     * @param path
+     *         The {@link ExecutableItem} URI.
+     *
+     * @return An optional {@link ExecutableItem}.
+     */
     @Override
-    public final Optional<ExecutableItem> resolve(URI path) {
+    public Optional<ExecutableItem> resolve(URI path) {
 
         String realPath = String.format("%s://%s%s", path.getScheme(), path.getHost(), path.getPath());
 
@@ -164,21 +220,56 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
                 .map(ExecutableItem.class::cast);
     }
 
+    /**
+     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can
+     * add custom options.
+     *
+     * @param event
+     *         The {@link DispatchEvent} that will be used.
+     */
     @Override
     public void prepare(DispatchEvent event) {
 
     }
 
+    /**
+     * Check if this {@link InteractionResponseHandler} can handle the provided {@link InteractionResponse}.
+     *
+     * @param response
+     *         The generated {@link InteractionResponse}.
+     *
+     * @return True if able to handle, false otherwise.
+     */
     @Override
-    public final boolean canHandle(InteractionResponse response) {
+    public boolean canHandle(InteractionResponse response) {
 
         return response instanceof SimpleInteractionResponse;
     }
 
+    /**
+     * Handle the {@link InteractionResponse} resulting from the {@link DispatchEvent} event provided.
+     *
+     * @param event
+     *         The {@link DispatchEvent} source of the {@link InteractionResponse}.
+     * @param executable
+     *         The {@link ExecutableItem} that has been used to generate the {@link InteractionResponse}.
+     * @param response
+     *         The {@link InteractionResponse} to handle.
+     */
     @Override
-    public void handleResponse(DispatchEvent event, InteractionResponse response) {
+    public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
 
-        event.getInteraction().replyEmbeds(response.getEmbed().build()).setEphemeral(response.isEphemeral()).queue();
+        if (this.canResolve(event.getPath()) && executable instanceof InteractionItem item) {
+            event.getInteraction()
+                    .replyEmbeds(response.getEmbed().build())
+                    .setEphemeral(item.getMeta().isHidden())
+                    .queue();
+        } else {
+            event.getInteraction()
+                    .replyEmbeds(response.getEmbed().build())
+                    .setEphemeral(response.isEphemeral())
+                    .queue();
+        }
     }
 
 }

@@ -34,8 +34,6 @@ public class InteractionDeclarationException extends RuntimeException {
         this.error             = error;
     }
 
-
-
     public Class<?> getDeclarationClass() {
 
         return declarationClass;

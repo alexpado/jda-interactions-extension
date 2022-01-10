@@ -1,6 +1,8 @@
 package fr.alexpado.jda.interactions;
 
+import fr.alexpado.jda.interactions.annotations.Interact;
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
+import fr.alexpado.jda.interactions.enums.InteractionType;
 import fr.alexpado.jda.interactions.executors.BasicDiscordContainer;
 import fr.alexpado.jda.interactions.executors.EmbedPageContainer;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
@@ -62,6 +64,11 @@ public class InteractionManagerImpl implements InteractionManager {
         return updateAction;
     }
 
+    /**
+     * Get all {@link InteractionItem} present in this {@link InteractionContainer}.
+     *
+     * @return A list of {@link InteractionItem}.
+     */
     @Override
     public List<InteractionItem> getInteractionItems() {
 
@@ -72,32 +79,63 @@ public class InteractionManagerImpl implements InteractionManager {
         return items;
     }
 
+    /**
+     * Register a custom class injection when calling method annotated with {@link Interact}. Parameters will be
+     * injected using mapping defined with this method.
+     *
+     * @param target
+     *         The target class for the injection.
+     * @param getter
+     *         The function that allows converting an {@link Interaction} to the given class.
+     */
     @Override
-    public final <T> void registerMapping(Class<T> target, Function<Interaction, T> getter) {
+    public <T> void registerMapping(Class<T> target, Function<Interaction, T> getter) {
 
         if (!this.dependencies.containsKey(target)) {
             this.dependencies.put(target, getter);
         }
     }
 
+    /**
+     * Build the underlying {@link InteractionContainer}s globally across all guilds.
+     *
+     * @param jda
+     *         The {@link JDA} instance to use.
+     *
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
+     *         CommandListUpdateAction#queue()}.
+     */
     @Override
-    public final CommandListUpdateAction build(JDA jda) {
+    public CommandListUpdateAction build(JDA jda) {
 
         return this.build(jda::updateCommands);
     }
 
+    /**
+     * Build the underlying {@link InteractionContainer}s only on the provided guild.
+     *
+     * @param guild
+     *         The {@link Guild} instance to use.
+     *
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
+     *         CommandListUpdateAction#queue()}.
+     */
     @Override
-    public final CommandListUpdateAction build(Guild guild) {
+    public CommandListUpdateAction build(Guild guild) {
 
         return this.build(guild::updateCommands);
     }
 
+    /**
+     * Dispatch and execute the appropriate actions associated with the provided {@link DispatchEvent}.
+     *
+     * @param event
+     *         A {@link DispatchEvent}.
+     */
     @Override
-    public final void dispatch(DispatchEvent event) {
+    public void dispatch(DispatchEvent event) {
 
-        System.out.println("Received call to: " + event.getPath());
-
-        // Find a resolver
+        // <editor-fold desc="Step 1 - Preprocessing">
         Optional<InteractionExecutor> optionalExecutor = this.executors.stream()
                 .filter(item -> item.canResolve(event.getPath()))
                 .findFirst();
@@ -115,8 +153,9 @@ public class InteractionManagerImpl implements InteractionManager {
         InteractionExecutor     executor     = optionalExecutor.get();
         InteractionErrorHandler errorHandler = executor instanceof InteractionErrorHandler handler ? handler : this.handler;
         executor.prepare(event);
+        // </editor-fold>
 
-
+        // <editor-fold desc="Step 2 - Execution">
         Optional<ExecutableItem> optionalExecutable = executor.resolve(event.getPath());
 
         if (optionalExecutable.isEmpty()) {
@@ -139,8 +178,9 @@ public class InteractionManagerImpl implements InteractionManager {
             errorHandler.handleException(event, executable, e);
             return;
         }
+        // </editor-fold>
 
-        // Rerun executor searching
+        // <editor-fold desc="Step 3 - Response Handling">
         Optional<InteractionResponseHandler> optionalResponseHandler = this.responseHandlers.stream()
                 .filter(item -> item.canHandle(response))
                 .findFirst();
@@ -152,39 +192,88 @@ public class InteractionManagerImpl implements InteractionManager {
         }
 
         InteractionResponseHandler responseHandler = optionalResponseHandler.get();
-        responseHandler.handleResponse(event, response);
+        responseHandler.handleResponse(event, executable, response);
+        // </editor-fold>
+
     }
 
+    /**
+     * Add a new {@link InteractionExecutor} to this {@link InteractionManager}.
+     *
+     * @param executor
+     *         The {@link InteractionExecutor} instance.
+     */
     @Override
-    public void addExecutor(InteractionExecutor resolver) {
+    public void addExecutor(InteractionExecutor executor) {
 
-        this.executors.add(resolver);
+        this.executors.add(executor);
     }
 
+    /**
+     * Add a new {@link InteractionResponseHandler} to this {@link InteractionManager}.
+     *
+     * @param responseHandler
+     *         The {@link InteractionResponseHandler} instance.
+     */
     @Override
     public void addResponseHandler(InteractionResponseHandler responseHandler) {
 
         this.responseHandlers.add(responseHandler);
     }
 
+    /**
+     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be
+     * called.
+     *
+     * The object must have at least one public method annotated with {@link Interact} for this call to serve a
+     * purpose.
+     *
+     * @param holder
+     *         The object to add.
+     */
     @Override
-    public <T> void registerInteraction(T holder) {
+    public void registerInteraction(Object holder) {
 
         this.defaultContainer.registerInteraction(holder);
     }
 
+    /**
+     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple
+     * interaction on-the-fly without bothering with annotations.
+     *
+     * @param meta
+     *         The {@link InteractionMeta} of the new interaction.
+     * @param item
+     *         The {@link ExecutableItem} to use when executing the interaction.
+     */
     @Override
     public void registerInteraction(InteractionMeta meta, ExecutableItem item) {
 
         this.defaultContainer.registerInteraction(meta, item);
     }
 
+    /**
+     * Register a new {@link InteractionItem}.
+     *
+     * @param item
+     *         The {@link InteractionItem}.
+     */
     @Override
     public void registerInteraction(InteractionItem item) {
 
         this.defaultContainer.registerInteraction(item);
     }
 
+    /**
+     * Build this {@link InteractionContainer} and add all {@link InteractionItem} having their interaction type set to
+     * {@link InteractionType#SLASH} as Discord Slash Commands.
+     *
+     * @param updateAction
+     *         The {@link CommandListUpdateAction} to use to register slash commands.
+     *
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
+     *         CommandListUpdateAction#queue()}.
+     */
     @Override
     public CommandListUpdateAction build(CommandListUpdateAction updateAction) {
 

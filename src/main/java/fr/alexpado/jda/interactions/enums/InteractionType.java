@@ -36,14 +36,4 @@ public enum InteractionType {
 
         return this.prefix + path;
     }
-
-    public boolean isButton() {
-
-        return this == BUTTON || this == ALL;
-    }
-
-    public boolean isSlash() {
-
-        return this == BUTTON || this == ALL;
-    }
 }

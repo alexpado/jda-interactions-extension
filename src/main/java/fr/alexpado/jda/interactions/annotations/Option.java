@@ -7,18 +7,37 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation allowing to list all options available for an {@link Interact}.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 public @interface Option {
 
+    /**
+     * The name of the option. In a slash context, this will be shown as command parameter.
+     *
+     * @return The option's name.
+     */
     String name();
 
+    /**
+     * The description of the option. In a Slash context, this will be shown as a command parameter description.
+     *
+     * @return The option's description.
+     */
     String description();
 
+    /**
+     * List of {@link Choice} available for this option.
+     *
+     * @return The option's choices.
+     */
     Choice[] choices() default {};
 
     /**
-     * Define if this option is required for the command to be executed. The verification is done by Discord.
+     * Define if this option is required for the interaction to be executed. In a Slash context, the verification is
+     * done by Discord.
      *
      * @return True if the option is required, false otherwise.
      */

@@ -6,8 +6,7 @@ import fr.alexpado.jda.interactions.entities.responses.PaginatedResponse;
 import fr.alexpado.jda.interactions.entities.responses.SimpleInteractionResponse;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
 import fr.alexpado.jda.interactions.interfaces.FeatureContainer;
-import fr.alexpado.jda.interactions.interfaces.interactions.InteractionItem;
-import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponse;
+import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -27,35 +26,63 @@ import java.util.function.Function;
 
 public class EmbedPageContainer implements FeatureContainer {
 
-    private Map<Long, PaginatedResponse> responses = new HashMap<>();
+    private final Map<Long, PaginatedResponse> responses = new HashMap<>();
 
+    /**
+     * Check if this {@link InteractionExecutor} can be used to retrieve an {@link ExecutableItem} with the given URI.
+     *
+     * @param uri
+     *         The {@link ExecutableItem} URI.
+     *
+     * @return True if this {@link InteractionExecutor} can handle the request.
+     */
     @Override
     public boolean canResolve(URI uri) {
 
         return uri.getScheme().equals("page");
     }
 
+    /**
+     * Try to match an {@link ExecutableItem} with the provided URI.
+     *
+     * @param path
+     *         The {@link ExecutableItem} URI.
+     *
+     * @return An optional {@link ExecutableItem}.
+     */
     @Override
     public Optional<ExecutableItem> resolve(URI path) {
 
         return Optional.of(this);
     }
 
+    /**
+     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can
+     * add custom options.
+     *
+     * @param event
+     *         The {@link DispatchEvent} that will be used.
+     */
     @Override
     public void prepare(DispatchEvent event) {
 
     }
 
+    /**
+     * Execute this {@link ExecutableItem} with the provided parameters.
+     *
+     * @param event
+     *         The {@link DispatchEvent} that allowed to match this {@link ExecutableItem}.
+     * @param mapping
+     *         The dependency mapping set through {@link InteractionManager#registerMapping(Class, Function)}.
+     *
+     * @return An {@link InteractionResponse} implementation.
+     *
+     * @throws Exception
+     *         Threw if something happen during the execution. Implementation dependent.
+     */
     @Override
-    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) {
-
-        System.out.println("Embed: Handling page URI " + event.getPath());
-        System.out.println("-- Registered paginated embed:");
-
-        for (Long ids : this.responses.keySet()) {
-            System.out.println("   " + ids);
-        }
-        System.out.println("--");
+    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) throws Exception {
 
         long   id     = Long.parseLong(event.getPath().getHost());
         String action = event.getPath().getPath();
@@ -71,7 +98,7 @@ public class EmbedPageContainer implements FeatureContainer {
             switch (action) {
                 case "/next" -> paginatedResponse.nextPage();
                 case "/previous" -> paginatedResponse.previousPage();
-                default -> System.out.println("Embed: Action not recognized (" + action + ")");
+                default -> this.handleNoAction(event);
             }
             return paginatedResponse;
         }
@@ -80,14 +107,32 @@ public class EmbedPageContainer implements FeatureContainer {
         return new SimpleInteractionResponse(InteractionTools.asEmbedBuilder(Color.RED, "This paginated message cannot be interacted with anymore."), true);
     }
 
+    /**
+     * Check if this {@link InteractionResponseHandler} can handle the provided {@link InteractionResponse}.
+     *
+     * @param response
+     *         The generated {@link InteractionResponse}.
+     *
+     * @return True if able to handle, false otherwise.
+     */
     @Override
     public boolean canHandle(InteractionResponse response) {
 
         return response instanceof PaginatedResponse;
     }
 
+    /**
+     * Handle the {@link InteractionResponse} resulting from the {@link DispatchEvent} event provided.
+     *
+     * @param event
+     *         The {@link DispatchEvent} source of the {@link InteractionResponse}.
+     * @param executable
+     *         The {@link ExecutableItem} that has been used to generate the {@link InteractionResponse}.
+     * @param response
+     *         The {@link InteractionResponse} to handle.
+     */
     @Override
-    public void handleResponse(DispatchEvent event, InteractionResponse response) {
+    public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
         // As #canHandle has been called beforehand, this is safe.
         PaginatedResponse paginatedResponse = (PaginatedResponse) response;
 
@@ -118,24 +163,49 @@ public class EmbedPageContainer implements FeatureContainer {
         message.editMessage(builder.build()).queue();
     }
 
+    /**
+     * Called when an exception occurs during the execution of an {@link ExecutableItem}.
+     *
+     * @param event
+     *         The {@link DispatchEvent} used when the error occurred.
+     * @param item
+     *         The {@link ExecutableItem} generating the error.
+     * @param exception
+     *         The {@link Exception} thrown.
+     */
     @Override
     public void handleException(DispatchEvent event, ExecutableItem item, Exception exception) {
 
         exception.printStackTrace();
-
-        event.getInteraction().replyEmbeds(InteractionTools.asEmbed(Color.RED, "An error occurred.")).setEphemeral(true)
+        event.getInteraction()
+                .replyEmbeds(InteractionTools.asEmbed(Color.RED, "An error occurred."))
+                .setEphemeral(true)
                 .queue();
     }
 
+    /**
+     * Called when {@link DispatchEvent#getPath()} did not match any {@link InteractionItem}.
+     *
+     * @param event
+     *         The unmatched {@link DispatchEvent}.
+     */
     @Override
     public void handleNoAction(DispatchEvent event) {
 
-        System.out.println("Embed: Could not execute");
     }
 
+    /**
+     * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter ({@link
+     * InteractionItem#canExecute(Interaction)}.
+     *
+     * @param event
+     *         The {@link DispatchEvent} used.
+     * @param item
+     *         The {@link InteractionItem} that could not be executed.
+     */
     @Override
     public void handleNonExecutable(DispatchEvent event, InteractionItem item) {
-        // NO-OP
+
     }
 
 }
