@@ -11,22 +11,23 @@ import java.util.function.Supplier;
 
 public class PaginatedResponse implements InteractionResponse {
 
-    private static final int ITEM_PER_PAGE = 5;
 
     private final Supplier<EmbedBuilder>   supplier;
     private final List<MessageEmbed.Field> fields;
     private final LocalDateTime            time;
-    private       int page;
-    private final int totalPage;
+    private final int                      itemPerPage;
+    private final int                      totalPage;
+    private       int                      page;
 
-    public PaginatedResponse(Supplier<EmbedBuilder> embedSupplier, List<MessageEmbed.Field> fields) {
+    public PaginatedResponse(Supplier<EmbedBuilder> embedSupplier, List<MessageEmbed.Field> fields, int itemPerPage) {
 
         this.supplier = embedSupplier;
         this.fields   = fields;
         this.time     = LocalDateTime.now();
 
         this.page      = 1;
-        this.totalPage = fields.size() / ITEM_PER_PAGE + Math.min(1, fields.size() % ITEM_PER_PAGE);
+        this.itemPerPage = itemPerPage;
+        this.totalPage = fields.size() / this.itemPerPage + Math.min(1, fields.size() % this.itemPerPage);
     }
 
     @Override
@@ -37,8 +38,8 @@ public class PaginatedResponse implements InteractionResponse {
 
     private List<MessageEmbed.Field> getPageItems() {
 
-        int startIndex = (this.page - 1) * ITEM_PER_PAGE;
-        int endIndex   = Math.min(this.page * ITEM_PER_PAGE, this.fields.size());
+        int startIndex = (this.page - 1) * this.itemPerPage;
+        int endIndex   = Math.min(this.page * this.itemPerPage, this.fields.size());
         return this.fields.subList(startIndex, endIndex);
     }
 
