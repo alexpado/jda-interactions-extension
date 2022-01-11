@@ -6,6 +6,7 @@ import fr.alexpado.jda.interactions.annotations.Option;
 import fr.alexpado.jda.interactions.annotations.Param;
 import fr.alexpado.jda.interactions.exceptions.InteractionDeclarationException;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import fr.alexpado.jda.interactions.interfaces.interactions.InteractionItem;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionManager;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponse;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
@@ -21,7 +22,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.interactions.InteractionItem {
+public class InteractionItemImpl implements InteractionItem {
 
     private final Object                 instance;
     private final Method                 method;
@@ -30,7 +31,7 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
     private final List<Option>           options;
 
     /**
-     * Create a new {@link InteractionItem} instance.
+     * Create a new {@link InteractionItemImpl} instance.
      *
      * @param instance
      *         The object instance which will handle an interaction execution.
@@ -39,7 +40,7 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
      * @param interact
      *         The {@link Button} annotation containing the main data describing the interaction.
      */
-    public InteractionItem(Object instance, Method method, InteractionMeta interact) {
+    public InteractionItemImpl(Object instance, Method method, InteractionMeta interact) {
 
         this.instance = instance;
         this.method   = method;
@@ -57,10 +58,10 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
         }
     }
 
-    public static List<fr.alexpado.jda.interactions.interfaces.interactions.InteractionItem> of(Object instance, Method method, Interact interact) {
+    public static List<InteractionItem> of(Object instance, Method method, Interact interact) {
 
         return InteractionMeta.of(interact).stream()
-                .map(meta -> new InteractionItem(instance, method, meta))
+                .map(meta -> new InteractionItemImpl(instance, method, meta))
                 .collect(Collectors.toList());
     }
 

@@ -2,6 +2,7 @@ package fr.alexpado.jda.interactions.executors;
 
 import fr.alexpado.jda.interactions.annotations.Interact;
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
+import fr.alexpado.jda.interactions.entities.InteractionItemImpl;
 import fr.alexpado.jda.interactions.entities.responses.SimpleInteractionResponse;
 import fr.alexpado.jda.interactions.enums.InteractionType;
 import fr.alexpado.jda.interactions.ext.InteractionCommandData;
@@ -55,14 +56,14 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
             for (Method interactiveMethod : interactiveMethods) {
                 Interact interact = interactiveMethod.getAnnotation(Interact.class);
 
-                List<InteractionItem> scannedItems = fr.alexpado.jda.interactions.entities.InteractionItem.of(candidate, interactiveMethod, interact);
+                List<InteractionItem> scannedItems = InteractionItemImpl.of(candidate, interactiveMethod, interact);
 
                 for (InteractionItem interactionItem : scannedItems) {
                     if (interactionItem.getMeta().getType() == InteractionType.SLASH) { // JDA objects shenanigans
                         String name   = interactionItem.getMeta().getName();
                         String prefix = Arrays.asList(name.split("/")).get(0);
 
-                        InteractionCommandData data = this.dataMap.getOrDefault(prefix, new InteractionCommandData(prefix, interactionItem.getPath()));
+                        InteractionCommandData data = this.dataMap.getOrDefault(prefix, new InteractionCommandData(prefix, interactionItem.getMeta()));
                         data.register(interactionItem.getMeta());
                         this.dataMap.put(prefix, data);
                     }
@@ -140,7 +141,7 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
         String name   = meta.getName();
         String prefix = Arrays.asList(name.split("/")).get(0);
 
-        InteractionCommandData data = this.preDataMap.getOrDefault(prefix, new InteractionCommandData(prefix, meta.getDescription()));
+        InteractionCommandData data = this.preDataMap.getOrDefault(prefix, new InteractionCommandData(prefix, meta));
         data.register(meta);
         this.preDataMap.put(prefix, data);
 
