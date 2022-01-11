@@ -2,7 +2,6 @@ package fr.alexpado.jda.interactions;
 
 import fr.alexpado.jda.interactions.annotations.Interact;
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
-import fr.alexpado.jda.interactions.enums.InteractionType;
 import fr.alexpado.jda.interactions.executors.BasicDiscordContainer;
 import fr.alexpado.jda.interactions.executors.EmbedPageContainer;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
@@ -11,8 +10,10 @@ import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.InteractionType;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 import java.awt.*;
@@ -51,6 +52,22 @@ public class InteractionManagerImpl implements InteractionManager {
         this.defaultContainer = basicDiscordContainer;
 
         builder.addEventListeners(new InteractionListener(this));
+
+        // Default injection
+        this.registerMapping(InteractionType.class, Interaction::getType);
+        this.registerMapping(Guild.class, Interaction::getGuild);
+        this.registerMapping(ChannelType.class, Interaction::getChannelType);
+        this.registerMapping(User.class, Interaction::getUser);
+        this.registerMapping(Member.class, Interaction::getMember);
+        this.registerMapping(Channel.class, Interaction::getChannel);
+        this.registerMapping(InteractionHook.class, Interaction::getHook);
+        this.registerMapping(GuildChannel.class, Interaction::getGuildChannel);
+        this.registerMapping(MessageChannel.class, Interaction::getMessageChannel);
+        this.registerMapping(TextChannel.class, Interaction::getTextChannel);
+        this.registerMapping(NewsChannel.class, Interaction::getNewsChannel);
+        this.registerMapping(VoiceChannel.class, Interaction::getVoiceChannel);
+        this.registerMapping(PrivateChannel.class, Interaction::getPrivateChannel);
+        this.registerMapping(JDA.class, Interaction::getJDA);
     }
 
     private CommandListUpdateAction build(Supplier<CommandListUpdateAction> supplier) {
@@ -271,7 +288,7 @@ public class InteractionManagerImpl implements InteractionManager {
 
     /**
      * Build this {@link InteractionContainer} and add all {@link InteractionItem} having their interaction type set to
-     * {@link InteractionType#SLASH} as Discord Slash Commands.
+     * {@link fr.alexpado.jda.interactions.enums.InteractionType#SLASH} as Discord Slash Commands.
      *
      * @param updateAction
      *         The {@link CommandListUpdateAction} to use to register slash commands.
