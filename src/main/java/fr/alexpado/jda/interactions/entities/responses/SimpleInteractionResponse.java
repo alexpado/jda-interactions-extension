@@ -11,20 +11,27 @@ public class SimpleInteractionResponse implements InteractionResponse {
     private final int          code;
     private final boolean      ephemeral;
 
+    public SimpleInteractionResponse(EmbedBuilder builder) {
+
+        this(builder, 0, false);
+    }
+
     public SimpleInteractionResponse(EmbedBuilder builder, int code) {
 
-        this.builder   = builder;
-        this.code      = code;
-        this.ephemeral = false;
+        this(builder, code, false);
     }
 
     public SimpleInteractionResponse(EmbedBuilder builder, boolean ephemeral) {
 
-        this.builder   = builder;
-        this.code      = 0;
-        this.ephemeral = ephemeral;
+        this(builder, 0, ephemeral);
     }
 
+    public SimpleInteractionResponse(EmbedBuilder builder, int code, boolean ephemeral) {
+
+        this.builder   = builder;
+        this.code      = code;
+        this.ephemeral = ephemeral;
+    }
 
     /**
      * Retrieves the {@link EmbedBuilder} representing the result of this {@link InteractionResponse}.
