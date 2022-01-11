@@ -74,6 +74,6 @@ public @interface Interact {
      *
      * @return True if it should be deferred, false otherwise.
      */
-    boolean defer();
+    boolean defer() default false;
 
 }
