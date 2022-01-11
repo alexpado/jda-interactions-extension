@@ -168,6 +168,11 @@ public class InteractionManagerImpl implements InteractionManager {
         if (executable instanceof InteractionItem item) {
             if (!item.canExecute(event.getInteraction())) {
                 errorHandler.handleNonExecutable(event, item);
+                return;
+            }
+
+            if (item.getMeta().isDeferred()) {
+                event.getInteraction().deferReply(item.getMeta().isHidden()).complete();
             }
         }
 

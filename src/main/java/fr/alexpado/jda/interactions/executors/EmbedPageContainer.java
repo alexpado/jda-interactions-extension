@@ -78,11 +78,9 @@ public class EmbedPageContainer implements FeatureContainer {
      *
      * @return An {@link InteractionResponse} implementation.
      *
-     * @throws Exception
-     *         Threw if something happen during the execution. Implementation dependent.
      */
     @Override
-    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) throws Exception {
+    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) {
 
         long   id     = Long.parseLong(event.getPath().getHost());
         String action = event.getPath().getPath();
@@ -133,6 +131,11 @@ public class EmbedPageContainer implements FeatureContainer {
      */
     @Override
     public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
+
+        if (event.getInteraction().isAcknowledged()) {
+            this.handleException(event, executable, new IllegalStateException("Unable to use pagination on an already-acknowledged interaction."));
+        }
+
         // As #canHandle has been called beforehand, this is safe.
         PaginatedResponse paginatedResponse = (PaginatedResponse) response;
 

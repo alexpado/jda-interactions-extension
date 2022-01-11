@@ -259,17 +259,23 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     @Override
     public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
 
-        if (this.canResolve(event.getPath()) && executable instanceof InteractionItem item) {
-            event.getInteraction()
-                    .replyEmbeds(response.getEmbed().build())
-                    .setEphemeral(item.getMeta().isHidden())
-                    .queue();
-        } else {
-            event.getInteraction()
-                    .replyEmbeds(response.getEmbed().build())
-                    .setEphemeral(response.isEphemeral())
-                    .queue();
+        if (event.getInteraction().isAcknowledged()) {
+            event.getInteraction().getHook().editOriginalEmbeds(response.getEmbed().build()).queue();
+            return;
         }
+
+        boolean ephemeral;
+
+        if (this.canResolve(event.getPath()) && executable instanceof InteractionItem item) {
+            ephemeral = item.getMeta().isHidden();
+        } else {
+            ephemeral = response.isEphemeral();
+        }
+
+        event.getInteraction()
+                .replyEmbeds(response.getEmbed().build())
+                .setEphemeral(ephemeral)
+                .queue();
     }
 
 }

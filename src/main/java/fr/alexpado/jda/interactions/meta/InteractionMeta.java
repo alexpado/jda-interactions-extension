@@ -16,19 +16,20 @@ public class InteractionMeta {
     private final SlashTarget      target;
     private final List<OptionMeta> options;
     private final boolean          hide;
+    private final boolean          defer;
 
-    public InteractionMeta(String name, String description, InteractionType type, SlashTarget target, boolean hide) {
+    public InteractionMeta(String name, String description, InteractionType type, SlashTarget target, boolean hide, boolean defer) {
 
-        this(name, description, type, target, hide, Collections.emptyList());
+        this(name, description, type, target, hide, defer, Collections.emptyList());
     }
 
-    public InteractionMeta(String name, String description, InteractionType type, SlashTarget target, boolean hide, OptionMeta... options) {
+    public InteractionMeta(String name, String description, InteractionType type, SlashTarget target, boolean hide, boolean defer, OptionMeta... options) {
 
-        this(name, description, type, target, hide, Arrays.asList(options));
+        this(name, description, type, target, hide, defer, Arrays.asList(options));
     }
 
 
-    public InteractionMeta(String name, String description, InteractionType type, SlashTarget target, boolean hide, List<OptionMeta> options) {
+    public InteractionMeta(String name, String description, InteractionType type, SlashTarget target, boolean hide, boolean defer, List<OptionMeta> options) {
 
         this.name        = name;
         this.description = description;
@@ -36,6 +37,7 @@ public class InteractionMeta {
         this.target      = target;
         this.options     = options;
         this.hide        = hide;
+        this.defer       = defer;
     }
 
     public InteractionMeta(InteractionType type, Interact interact) {
@@ -52,6 +54,8 @@ public class InteractionMeta {
             case BUTTON -> interact.hideAsButton();
             case NONE -> false;
         };
+
+        this.defer = interact.defer();
     }
 
     public static List<InteractionMeta> of(Interact interact) {
@@ -98,6 +102,11 @@ public class InteractionMeta {
     public boolean isHidden() {
 
         return hide;
+    }
+
+    public boolean isDeferred() {
+
+        return defer;
     }
 
 }

@@ -69,4 +69,11 @@ public @interface Interact {
      */
     boolean hideAsButton() default false;
 
+    /**
+     * Define if the result should be done asynchronously and tell Discord that we'll respond to the interaction later.
+     *
+     * @return True if it should be deferred, false otherwise.
+     */
+    boolean defer();
+
 }
