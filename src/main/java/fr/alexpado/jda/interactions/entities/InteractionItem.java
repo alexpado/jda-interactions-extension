@@ -60,7 +60,7 @@ public class InteractionItem implements fr.alexpado.jda.interactions.interfaces.
     public static List<fr.alexpado.jda.interactions.interfaces.interactions.InteractionItem> of(Object instance, Method method, Interact interact) {
 
         return InteractionMeta.of(interact).stream()
-                .map(meta -> new InteractionItem(interact, method, meta))
+                .map(meta -> new InteractionItem(instance, method, meta))
                 .collect(Collectors.toList());
     }
 
