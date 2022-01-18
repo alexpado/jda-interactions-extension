@@ -9,12 +9,10 @@ import fr.alexpado.jda.interactions.interfaces.FeatureContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
 
 import java.awt.*;
 import java.net.URI;
@@ -26,7 +24,7 @@ import java.util.function.Function;
 
 public class EmbedPageContainer implements FeatureContainer {
 
-    private final Map<Long, PaginatedResponse> responses = new HashMap<>();
+    private final Map<String, PaginatedResponse<?>> responses = new HashMap<>();
 
     /**
      * Check if this {@link InteractionExecutor} can be used to retrieve an {@link ExecutableItem} with the given URI.
@@ -77,20 +75,19 @@ public class EmbedPageContainer implements FeatureContainer {
      *         The dependency mapping set through {@link InteractionManager#registerMapping(Class, Function)}.
      *
      * @return An {@link InteractionResponse} implementation.
-     *
      */
     @Override
     public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) {
 
-        long   id     = Long.parseLong(event.getPath().getHost());
+        String id     = event.getPath().getHost();
         String action = event.getPath().getPath();
 
         if (!this.responses.containsKey(id)) {
             return new SimpleInteractionResponse(InteractionTools.asEmbedBuilder(Color.RED, "This paginated message cannot be interacted with anymore."), true);
         }
 
-        PaginatedResponse paginatedResponse = this.responses.get(id);
-        LocalDateTime     timeLimit         = paginatedResponse.getTime().plusMinutes(5);
+        PaginatedResponse<?> paginatedResponse = this.responses.get(id);
+        LocalDateTime        timeLimit         = paginatedResponse.getTime().plusMinutes(5);
 
         if (timeLimit.isAfter(LocalDateTime.now())) {
             switch (action) {
@@ -131,39 +128,35 @@ public class EmbedPageContainer implements FeatureContainer {
      */
     @Override
     public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
-
-        if (event.getInteraction().isAcknowledged()) {
-            this.handleException(event, executable, new IllegalStateException("Unable to use pagination on an already-acknowledged interaction."));
-        }
-
         // As #canHandle has been called beforehand, this is safe.
-        PaginatedResponse paginatedResponse = (PaginatedResponse) response;
+        PaginatedResponse<?> paginatedResponse = (PaginatedResponse<?>) response;
 
-        Message        message;
-        MessageBuilder builder = new MessageBuilder();
-        MessageEmbed   embed   = paginatedResponse.getEmbed().build();
-        builder.setEmbeds(embed);
+        InteractionHook hook;
 
-        if (event.getInteraction() instanceof SlashCommandEvent slash) {
-            InteractionHook hook = slash.reply(builder.build()).complete();
-            message = hook.retrieveOriginal().complete();
-            this.responses.put(message.getIdLong(), paginatedResponse);
-        } else if (event.getInteraction() instanceof ButtonClickEvent button) {
-            message = button.deferEdit().complete().retrieveOriginal().complete();
+        if (event.getInteraction() instanceof ButtonClickEvent button) {
+            hook = button.getHook();
+
+            if (!button.isAcknowledged()) {
+                hook = button.deferEdit().complete();
+            }
+        } else if (event.getInteraction() instanceof SlashCommandEvent slash) {
+            hook = slash.getHook();
+
+            if (!slash.isAcknowledged()) {
+                hook = slash.deferReply().complete();
+            }
         } else {
             this.handleNoAction(event);
             return;
         }
 
-        builder.setEmbeds(embed);
-        builder.setActionRows(
-                ActionRow.of(
-                        paginatedResponse.getPreviousButton(message.getIdLong()),
-                        paginatedResponse.getNextButton(message.getIdLong())
-                )
-        );
+        Message message = hook.retrieveOriginal().complete();
+        this.responses.put(message.getId(), paginatedResponse);
 
-        message.editMessage(builder.build()).queue();
+        MessageBuilder builder = new MessageBuilder();
+        builder.setEmbeds(paginatedResponse.getEmbed().build());
+        builder.setActionRows(paginatedResponse.getActionRows(message.getId()));
+        hook.editOriginal(builder.build()).queue();
     }
 
     /**

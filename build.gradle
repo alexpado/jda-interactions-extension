@@ -48,7 +48,6 @@ def isNonStable = { String version ->
 }
 
 tasks.named("dependencyUpdates").configure {
-    // Example 2: disallow release candidates as upgradable versions from stable versions
     rejectVersionIf {
         isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)
     }

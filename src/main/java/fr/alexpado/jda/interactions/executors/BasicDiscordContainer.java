@@ -9,6 +9,7 @@ import fr.alexpado.jda.interactions.ext.InteractionCommandData;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
@@ -260,8 +261,12 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     @Override
     public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
 
+        MessageBuilder builder = new MessageBuilder();
+        builder.setEmbeds(response.getEmbed().build());
+
+
         if (event.getInteraction().isAcknowledged()) {
-            event.getInteraction().getHook().editOriginalEmbeds(response.getEmbed().build()).queue();
+            event.getInteraction().getHook().editOriginal(builder.build()).queue();
             return;
         }
 
@@ -274,7 +279,7 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
         }
 
         event.getInteraction()
-                .replyEmbeds(response.getEmbed().build())
+                .reply(builder.build())
                 .setEphemeral(ephemeral)
                 .queue();
     }
