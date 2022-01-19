@@ -9,7 +9,6 @@ import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -32,7 +31,7 @@ public class InteractionManagerImpl implements InteractionManager {
     private final InteractionErrorHandler                 handler;
 
 
-    public InteractionManagerImpl(JDABuilder builder, InteractionErrorHandler defaultErrorHandler) {
+    public InteractionManagerImpl(JDA jda, InteractionErrorHandler defaultErrorHandler) {
 
         this.dependencies     = new HashMap<>();
         this.executors        = new ArrayList<>();
@@ -51,7 +50,7 @@ public class InteractionManagerImpl implements InteractionManager {
         this.containers.add(basicDiscordContainer);
         this.defaultContainer = basicDiscordContainer;
 
-        builder.addEventListeners(new InteractionListener(this));
+        jda.addEventListener(new InteractionListener(this));
 
         // Default injection
         this.registerMapping(InteractionType.class, Interaction::getType);
