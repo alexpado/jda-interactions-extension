@@ -13,7 +13,9 @@ def generalCharset = StandardCharsets.UTF_8.name();
 
 reckon {
     stages('dev', 'beta', 'rc', 'final')
-    calcScopeFromProp()
+
+    scopeCalc = calcScopeFromProp() | calcScopeFromCommitMessages()
+    stageCalc = calcStageFromProp()
 }
 
 group 'fr.alexpado'
