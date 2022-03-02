@@ -1,5 +1,6 @@
 package fr.alexpado.jda.interactions.enums;
 
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import net.dv8tion.jda.api.interactions.Interaction;
 
 import java.util.function.Predicate;
@@ -7,17 +8,17 @@ import java.util.function.Predicate;
 public enum SlashTarget {
 
     ALL(event -> true),
-    GUILD(Interaction::isFromGuild),
+    GUILD(JdaInteraction::isFromGuild),
     PRIVATE(event -> !event.isFromGuild());
 
-    final Predicate<Interaction> compatibilityChecker;
+    final Predicate<JdaInteraction> compatibilityChecker;
 
-    SlashTarget(Predicate<Interaction> compatibilityChecker) {
+    SlashTarget(Predicate<JdaInteraction> compatibilityChecker) {
 
         this.compatibilityChecker = compatibilityChecker;
     }
 
-    public boolean isCompatible(Interaction event) {
+    public boolean isCompatible(JdaInteraction event) {
 
         return this.compatibilityChecker.test(event);
     }

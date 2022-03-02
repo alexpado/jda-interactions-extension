@@ -5,6 +5,7 @@ import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.executors.BasicDiscordContainer;
 import fr.alexpado.jda.interactions.executors.EmbedPageContainer;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -23,12 +24,12 @@ import java.util.function.Supplier;
 
 public class InteractionManagerImpl implements InteractionManager {
 
-    private final Map<Class<?>, Function<Interaction, ?>> dependencies;
-    private final List<InteractionExecutor>               executors;
-    private final List<InteractionContainer>              containers;
-    private final List<InteractionResponseHandler>        responseHandlers;
-    private final InteractionContainer                    defaultContainer;
-    private final InteractionErrorHandler                 handler;
+    private final Map<Class<?>, Function<JdaInteraction, ?>> dependencies;
+    private final List<InteractionExecutor>                  executors;
+    private final List<InteractionContainer>                 containers;
+    private final List<InteractionResponseHandler>           responseHandlers;
+    private final InteractionContainer                       defaultContainer;
+    private final InteractionErrorHandler                    handler;
 
 
     public InteractionManagerImpl(JDA jda, InteractionErrorHandler defaultErrorHandler) {
@@ -53,20 +54,20 @@ public class InteractionManagerImpl implements InteractionManager {
         jda.addEventListener(new InteractionListener(this));
 
         // Default injection
-        this.registerMapping(InteractionType.class, Interaction::getType);
-        this.registerMapping(Guild.class, Interaction::getGuild);
-        this.registerMapping(ChannelType.class, Interaction::getChannelType);
-        this.registerMapping(User.class, Interaction::getUser);
-        this.registerMapping(Member.class, Interaction::getMember);
-        this.registerMapping(Channel.class, Interaction::getChannel);
-        this.registerMapping(InteractionHook.class, Interaction::getHook);
-        this.registerMapping(GuildChannel.class, Interaction::getGuildChannel);
-        this.registerMapping(MessageChannel.class, Interaction::getMessageChannel);
-        this.registerMapping(TextChannel.class, Interaction::getTextChannel);
-        this.registerMapping(NewsChannel.class, Interaction::getNewsChannel);
-        this.registerMapping(VoiceChannel.class, Interaction::getVoiceChannel);
-        this.registerMapping(PrivateChannel.class, Interaction::getPrivateChannel);
-        this.registerMapping(JDA.class, Interaction::getJDA);
+        this.registerMapping(InteractionType.class, JdaInteraction::getType);
+        this.registerMapping(Guild.class, JdaInteraction::getGuild);
+        this.registerMapping(ChannelType.class, JdaInteraction::getChannelType);
+        this.registerMapping(User.class, JdaInteraction::getUser);
+        this.registerMapping(Member.class, JdaInteraction::getMember);
+        this.registerMapping(Channel.class, JdaInteraction::getChannel);
+        this.registerMapping(InteractionHook.class, JdaInteraction::getHook);
+        this.registerMapping(GuildChannel.class, JdaInteraction::getGuildChannel);
+        this.registerMapping(MessageChannel.class, JdaInteraction::getMessageChannel);
+        this.registerMapping(TextChannel.class, JdaInteraction::getTextChannel);
+        this.registerMapping(NewsChannel.class, JdaInteraction::getNewsChannel);
+        this.registerMapping(VoiceChannel.class, JdaInteraction::getVoiceChannel);
+        this.registerMapping(PrivateChannel.class, JdaInteraction::getPrivateChannel);
+        this.registerMapping(JDA.class, JdaInteraction::getJDA);
     }
 
     private CommandListUpdateAction build(Supplier<CommandListUpdateAction> supplier) {
@@ -105,7 +106,7 @@ public class InteractionManagerImpl implements InteractionManager {
      *         The function that allows converting an {@link Interaction} to the given class.
      */
     @Override
-    public <T> void registerMapping(Class<T> target, Function<Interaction, T> getter) {
+    public <T> void registerMapping(Class<T> target, Function<JdaInteraction, T> getter) {
 
         if (!this.dependencies.containsKey(target)) {
             this.dependencies.put(target, getter);

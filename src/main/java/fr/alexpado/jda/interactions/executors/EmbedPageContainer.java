@@ -6,12 +6,12 @@ import fr.alexpado.jda.interactions.entities.responses.PaginatedResponse;
 import fr.alexpado.jda.interactions.entities.responses.SimpleInteractionResponse;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
 import fr.alexpado.jda.interactions.interfaces.FeatureContainer;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 
 import java.awt.*;
@@ -77,7 +77,7 @@ public class EmbedPageContainer implements FeatureContainer {
      * @return An {@link InteractionResponse} implementation.
      */
     @Override
-    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) {
+    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<JdaInteraction, ?>> mapping) {
 
         String id     = event.getPath().getHost();
         String action = event.getPath().getPath();
@@ -133,13 +133,13 @@ public class EmbedPageContainer implements FeatureContainer {
 
         InteractionHook hook;
 
-        if (event.getInteraction() instanceof ButtonClickEvent button) {
+        if (event.getInteraction() instanceof ButtonInteractionEvent button) {
             hook = button.getHook();
 
             if (!button.isAcknowledged()) {
                 hook = button.deferEdit().complete();
             }
-        } else if (event.getInteraction() instanceof SlashCommandEvent slash) {
+        } else if (event.getInteraction() instanceof SlashCommandInteractionEvent slash) {
             hook = slash.getHook();
 
             if (!slash.isAcknowledged()) {
@@ -192,7 +192,7 @@ public class EmbedPageContainer implements FeatureContainer {
 
     /**
      * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter ({@link
-     * InteractionItem#canExecute(Interaction)}.
+     * InteractionItem#canExecute(JdaInteraction)}.
      *
      * @param event
      *         The {@link DispatchEvent} used.

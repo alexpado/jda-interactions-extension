@@ -7,10 +7,10 @@ import fr.alexpado.jda.interactions.entities.responses.SimpleInteractionResponse
 import fr.alexpado.jda.interactions.enums.InteractionType;
 import fr.alexpado.jda.interactions.ext.InteractionCommandData;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 import java.lang.reflect.Method;
@@ -161,7 +161,7 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
             }
 
             @Override
-            public boolean canExecute(Interaction interaction) {
+            public boolean canExecute(JdaInteraction interaction) {
 
                 boolean targetAllowed = meta.getTarget().isCompatible(interaction);
                 boolean typeAllowed   = meta.getType().isCompatible(interaction);
@@ -170,7 +170,7 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
             }
 
             @Override
-            public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) throws Exception {
+            public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<JdaInteraction, ?>> mapping) throws Exception {
 
                 return item.execute(event, mapping);
             }

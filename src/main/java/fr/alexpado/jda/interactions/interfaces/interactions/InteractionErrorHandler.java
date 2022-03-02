@@ -2,6 +2,7 @@ package fr.alexpado.jda.interactions.interfaces.interactions;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import net.dv8tion.jda.api.interactions.Interaction;
 
 public interface InteractionErrorHandler {
@@ -28,7 +29,7 @@ public interface InteractionErrorHandler {
 
     /**
      * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter ({@link
-     * InteractionItem#canExecute(Interaction)}.
+     * InteractionItem#canExecute(JdaInteraction)}.
      *
      * @param event
      *         The {@link DispatchEvent} used.

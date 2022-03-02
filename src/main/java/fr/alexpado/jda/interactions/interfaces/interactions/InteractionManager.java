@@ -4,9 +4,9 @@ import fr.alexpado.jda.interactions.InteractionManagerImpl;
 import fr.alexpado.jda.interactions.annotations.Interact;
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.executors.BasicDiscordContainer;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 import java.util.function.Function;
@@ -25,11 +25,11 @@ public interface InteractionManager extends InteractionContainer {
      * @param target
      *         The target class for the injection.
      * @param getter
-     *         The function that allows converting an {@link Interaction} to the given class.
+     *         The function that allows converting an {@link JdaInteraction} to the given class.
      * @param <T>
      *         The class type.
      */
-    <T> void registerMapping(Class<T> target, Function<Interaction, T> getter);
+    <T> void registerMapping(Class<T> target, Function<JdaInteraction, T> getter);
 
     /**
      * Build the underlying {@link InteractionContainer}s globally across all guilds.

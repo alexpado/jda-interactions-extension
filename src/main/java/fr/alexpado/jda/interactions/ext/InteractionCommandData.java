@@ -3,6 +3,7 @@ package fr.alexpado.jda.interactions.ext;
 import fr.alexpado.jda.interactions.InteractionTools;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InteractionCommandData extends CommandData {
+public class InteractionCommandData extends CommandDataImpl {
 
     private final Map<String, InteractionGroupData>      groups          = new HashMap<>();
     private final Map<String, InteractionSubcommandData> subCommands     = new HashMap<>();

@@ -2,8 +2,9 @@ package fr.alexpado.jda.interactions;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.enums.InteractionType;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +23,7 @@ public class InteractionListener extends ListenerAdapter {
     }
 
     @Override
-    public void onButtonClick(@NotNull ButtonClickEvent event) {
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 
         String path = event.getComponentId();
         URI    uri  = URI.create(event.getComponentId());
@@ -40,19 +41,17 @@ public class InteractionListener extends ListenerAdapter {
             }
         }
 
-        this.manager.dispatch(new DispatchEvent(uri, event, optionMap));
-
+        this.manager.dispatch(new DispatchEvent(uri, (JdaInteraction) event, optionMap));
     }
 
     @Override
-    public void onSlashCommand(@NotNull SlashCommandEvent event) {
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 
         Map<String, Object> options = new HashMap<>();
 
         for (OptionMapping option : event.getOptions()) {
             options.put(option.getName(), switch (option.getType()) {
                 case BOOLEAN -> option.getAsBoolean();
-                case UNKNOWN, SUB_COMMAND, SUB_COMMAND_GROUP -> null;
                 case STRING -> option.getAsString();
                 case INTEGER -> option.getAsLong();
                 case CHANNEL -> option.getAsMessageChannel();
@@ -60,11 +59,13 @@ public class InteractionListener extends ListenerAdapter {
                 case ROLE -> option.getAsRole();
                 case MENTIONABLE -> option.getAsMentionable();
                 case NUMBER -> option.getAsDouble();
+                case ATTACHMENT -> option.getAsAttachment();
+                default -> null;
             });
         }
 
         URI           uri           = URI.create(InteractionType.SLASH.withPrefix(event.getCommandPath()));
-        DispatchEvent dispatchEvent = new DispatchEvent(uri, event, options);
+        DispatchEvent dispatchEvent = new DispatchEvent(uri, (JdaInteraction) event, options);
         this.manager.dispatch(dispatchEvent);
     }
 

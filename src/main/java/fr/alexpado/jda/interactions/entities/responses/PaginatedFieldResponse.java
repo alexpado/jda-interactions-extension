@@ -15,6 +15,7 @@ public class PaginatedFieldResponse extends PaginatedResponse<MessageEmbed.Field
 
     @Override
     public void render(EmbedBuilder embed, List<MessageEmbed.Field> items) {
+
         items.forEach(embed::addField);
     }
 

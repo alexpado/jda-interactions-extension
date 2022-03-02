@@ -6,6 +6,7 @@ import fr.alexpado.jda.interactions.annotations.Option;
 import fr.alexpado.jda.interactions.annotations.Param;
 import fr.alexpado.jda.interactions.exceptions.InteractionDeclarationException;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionItem;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionManager;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponse;
@@ -13,7 +14,7 @@ import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -24,11 +25,11 @@ import java.util.stream.Collectors;
 
 public class InteractionItemImpl implements InteractionItem {
 
-    private final Object                 instance;
-    private final Method                 method;
-    private final InteractionMeta        meta;
-    private final Predicate<Interaction> filter;
-    private final List<Option>           options;
+    private final Object                    instance;
+    private final Method                    method;
+    private final InteractionMeta           meta;
+    private final Predicate<JdaInteraction> filter;
+    private final List<Option>              options;
 
     /**
      * Create a new {@link InteractionItemImpl} instance.
@@ -79,7 +80,7 @@ public class InteractionItemImpl implements InteractionItem {
      *         Threw if something happen during the execution. Implementation dependent.
      */
     @Override
-    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<Interaction, ?>> mapping) throws Exception {
+    public InteractionResponse execute(DispatchEvent event, Map<Class<?>, Function<JdaInteraction, ?>> mapping) throws Exception {
 
         Collection<Object> callArgs = new ArrayList<>();
 
@@ -117,16 +118,16 @@ public class InteractionItemImpl implements InteractionItem {
     }
 
     /**
-     * Check if this {@link InteractionItem} can be used with the given {@link Interaction}. This is useful if you want
-     * to restrict some actions to some guilds.
+     * Check if this {@link InteractionItem} can be used with the given {@link JdaInteraction}. This is useful if you
+     * want to restrict some actions to some guilds.
      *
      * @param interaction
-     *         The Discord {@link Interaction}.
+     *         The Discord {@link JdaInteraction}.
      *
      * @return True if executable, false otherwise.
      */
     @Override
-    public boolean canExecute(Interaction interaction) {
+    public boolean canExecute(JdaInteraction interaction) {
 
         return this.filter.test(interaction);
     }

@@ -1,8 +1,8 @@
 package fr.alexpado.jda.interactions.interfaces.interactions;
 
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
-import net.dv8tion.jda.api.interactions.Interaction;
 
 public interface InteractionItem extends ExecutableItem {
 
@@ -21,14 +21,14 @@ public interface InteractionItem extends ExecutableItem {
     String getPath();
 
     /**
-     * Check if this {@link InteractionItem} can be used with the given {@link Interaction}. This is useful if you want
-     * to restrict some actions to some guilds.
+     * Check if this {@link InteractionItem} can be used with the given {@link JdaInteraction}. This is useful if you
+     * want to restrict some actions to some guilds.
      *
      * @param interaction
-     *         The Discord {@link Interaction}.
+     *         The Discord {@link JdaInteraction}.
      *
      * @return True if executable, false otherwise.
      */
-    boolean canExecute(Interaction interaction);
+    boolean canExecute(JdaInteraction interaction);
 
 }

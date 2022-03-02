@@ -3,7 +3,7 @@ package fr.alexpado.jda.interactions.entities.responses;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponse;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -135,6 +135,5 @@ public abstract class PaginatedResponse<T> implements InteractionResponse {
             return baseButton.asDisabled();
         }
     }
-
 
 }

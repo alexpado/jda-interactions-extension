@@ -1,6 +1,6 @@
 package fr.alexpado.jda.interactions.entities;
 
-import net.dv8tion.jda.api.interactions.Interaction;
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -9,15 +9,15 @@ import java.util.Map;
 public class DispatchEvent {
 
     private final URI                 path;
-    private final Interaction         interaction;
+    private final JdaInteraction      interaction;
     private final Map<String, Object> options;
 
-    public DispatchEvent(URI path, Interaction interaction) {
+    public DispatchEvent(URI path, JdaInteraction interaction) {
 
         this(path, interaction, new HashMap<>());
     }
 
-    public DispatchEvent(URI path, Interaction interaction, Map<String, Object> options) {
+    public DispatchEvent(URI path, JdaInteraction interaction, Map<String, Object> options) {
 
         this.path        = path;
         this.interaction = interaction;
@@ -29,7 +29,7 @@ public class DispatchEvent {
         return path;
     }
 
-    public Interaction getInteraction() {
+    public JdaInteraction getInteraction() {
 
         return interaction;
     }
@@ -38,4 +38,5 @@ public class DispatchEvent {
 
         return options;
     }
+
 }
