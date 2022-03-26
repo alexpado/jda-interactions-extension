@@ -41,7 +41,7 @@ public class InteractionListener extends ListenerAdapter {
             }
         }
 
-        this.manager.dispatch(new DispatchEvent(uri, (JdaInteraction) event, optionMap));
+        this.manager.dispatch(new DispatchEvent(uri, JdaInteraction.from(event), optionMap));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class InteractionListener extends ListenerAdapter {
         }
 
         URI           uri           = URI.create(InteractionType.SLASH.withPrefix(event.getCommandPath()));
-        DispatchEvent dispatchEvent = new DispatchEvent(uri, (JdaInteraction) event, options);
+        DispatchEvent dispatchEvent = new DispatchEvent(uri, JdaInteraction.from(event), options);
         this.manager.dispatch(dispatchEvent);
     }
 

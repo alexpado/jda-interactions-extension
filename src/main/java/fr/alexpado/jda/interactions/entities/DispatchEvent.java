@@ -1,6 +1,8 @@
 package fr.alexpado.jda.interactions.entities;
 
 import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
+import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 
 import java.net.URI;
 import java.util.HashMap;
