@@ -1,5 +1,6 @@
 package fr.alexpado.jda.interactions.enums;
 
+import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
@@ -8,23 +9,25 @@ import java.util.function.Predicate;
 
 public enum InteractionType {
 
-    ALL("all://", ev -> true),
-    SLASH("slash://", ev -> ev instanceof SlashCommandInteraction),
-    BUTTON("button://", ev -> ev instanceof ButtonInteraction),
-    NONE("none://", ev -> false);
+    ALL("all://"),
+    SLASH("slash://"),
+    BUTTON("button://"),
+    NONE("none://");
 
-    private final String                 prefix;
-    private final Predicate<Interaction> filter;
+    private final String                    prefix;
 
-    InteractionType(String prefix, Predicate<Interaction> filter) {
+    InteractionType(String prefix) {
 
         this.prefix = prefix;
-        this.filter = filter;
     }
 
-    public boolean isCompatible(Interaction interaction) {
+    public boolean isCompatible(JdaInteraction interaction) {
 
-        return this.filter.test(interaction);
+        return switch (this) {
+            case ALL -> true;
+            case SLASH, BUTTON -> interaction.getInteractionType() == this;
+            default -> false;
+        };
     }
 
     public String getPrefix() {

@@ -1,6 +1,9 @@
 package fr.alexpado.jda.interactions.interfaces.bridge;
 
+import fr.alexpado.jda.interactions.enums.InteractionType;
+import fr.alexpado.jda.interactions.enums.SlashTarget;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.audit.TargetType;
 import net.dv8tion.jda.api.entities.Channel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -20,9 +23,13 @@ import java.util.Locale;
  * Yes, duplicated code, because the JVM doesn't allow {@link SlashCommandInteraction} and {@link ButtonInteraction} to
  * be cast to {@link JdaInteraction}, even though both interfaces implement the required interfaces {@link Interaction}
  * and {@link IReplyCallback}...
+ *
+ * And obviously with this, we're losing the ability to use 'instanceof', so I had to create a method for this...
  */
 @SuppressWarnings("DuplicatedCode")
 public interface JdaInteraction extends Interaction, IReplyCallback {
+
+    InteractionType getInteractionType();
 
     static JdaInteraction from(SlashCommandInteraction interaction) {
 
@@ -106,6 +113,12 @@ public interface JdaInteraction extends Interaction, IReplyCallback {
             public long getIdLong() {
 
                 return interaction.getIdLong();
+            }
+
+            @Override
+            public InteractionType getInteractionType() {
+
+                return InteractionType.SLASH;
             }
         };
     }
@@ -192,6 +205,12 @@ public interface JdaInteraction extends Interaction, IReplyCallback {
             public long getIdLong() {
 
                 return interaction.getIdLong();
+            }
+
+            @Override
+            public InteractionType getInteractionType() {
+
+                return InteractionType.BUTTON;
             }
         };
     }
