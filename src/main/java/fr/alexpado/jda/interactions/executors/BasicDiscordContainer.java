@@ -12,6 +12,8 @@ import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -19,6 +21,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class BasicDiscordContainer implements InteractionExecutor, InteractionContainer, InteractionResponseHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicDiscordContainer.class);
 
     private final Collection<Object>                  candidates;
     private final List<InteractionItem>               items;
@@ -39,6 +43,7 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
 
     private void preprocess() {
 
+        LOGGER.info("Preprocessing interactions...");
         this.items.clear();
         this.dataMap.clear();
 
@@ -46,20 +51,25 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
         this.dataMap.putAll(this.preDataMap);
 
         for (Object candidate : this.candidates) {
+            LOGGER.debug("Analyzing {}", candidate.getClass().getSimpleName());
 
             Class<?> clazz   = candidate.getClass();
             Method[] methods = clazz.getMethods();
 
             List<Method> interactiveMethods = Arrays.stream(methods)
-                    .filter(method -> method.isAnnotationPresent(Interact.class))
-                    .toList();
+                                                    .filter(method -> method.isAnnotationPresent(Interact.class))
+                                                    .toList();
+
+            LOGGER.debug("Found {} interaction methods.", interactiveMethods.size());
 
             for (Method interactiveMethod : interactiveMethods) {
+                LOGGER.debug("Analyzing method {}...", interactiveMethod.getName());
                 Interact interact = interactiveMethod.getAnnotation(Interact.class);
 
                 List<InteractionItem> scannedItems = InteractionItemImpl.of(candidate, interactiveMethod, interact);
 
                 for (InteractionItem interactionItem : scannedItems) {
+                    LOGGER.debug("Registering {}...", interactionItem.getPath());
                     if (interactionItem.getMeta().getType() == InteractionType.SLASH) { // JDA objects shenanigans
                         String name   = interactionItem.getMeta().getName();
                         String prefix = Arrays.asList(name.split("/")).get(0);
@@ -68,13 +78,13 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
                         data.register(interactionItem.getMeta());
                         this.dataMap.put(prefix, data);
                     }
-
                     this.items.add(interactionItem);
                 }
             }
         }
 
         this.dataMap.values().forEach(InteractionCommandData::prepare);
+        LOGGER.info("Preprocessing finished.");
     }
 
     /**
@@ -114,7 +124,7 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     /**
      * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be
      * called.
-     *
+     * <p>
      * The object must have at least one public method annotated with {@link Interact} for this call to serve a
      * purpose.
      *
@@ -215,11 +225,12 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     public Optional<ExecutableItem> resolve(URI path) {
 
         String realPath = String.format("%s://%s%s", path.getScheme(), path.getHost(), path.getPath());
+        LOGGER.info("Resolve request for {}", realPath);
 
         return this.items.stream()
-                .filter(item -> item.getPath().equals(realPath))
-                .findFirst()
-                .map(ExecutableItem.class::cast);
+                         .filter(item -> item.getPath().equals(realPath))
+                         .findFirst()
+                         .map(ExecutableItem.class::cast);
     }
 
     /**
@@ -261,15 +272,18 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     @Override
     public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
 
+        LOGGER.info("[{}] Handling response...", event.getPath());
         MessageBuilder builder = new MessageBuilder();
         builder.setEmbeds(response.getEmbed().build());
 
 
         if (event.getInteraction().isAcknowledged()) {
+            LOGGER.debug("Response already acknowledged, editing message...");
             event.getInteraction().getHook().editOriginal(builder.build()).queue();
             return;
         }
 
+        LOGGER.debug("[{}]Checking response visibility...", event.getPath());
         boolean ephemeral;
 
         if (this.canResolve(event.getPath()) && executable instanceof InteractionItem item) {
@@ -278,10 +292,12 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
             ephemeral = response.isEphemeral();
         }
 
+        LOGGER.debug("[{}] Sending response (ephemeral: {})", event.getPath(), ephemeral);
+
         event.getInteraction()
-                .reply(builder.build())
-                .setEphemeral(ephemeral)
-                .queue();
+             .reply(builder.build())
+             .setEphemeral(ephemeral)
+             .queue();
     }
 
 }
