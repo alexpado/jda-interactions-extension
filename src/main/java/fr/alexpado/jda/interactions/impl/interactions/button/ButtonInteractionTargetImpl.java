@@ -2,6 +2,7 @@ package fr.alexpado.jda.interactions.impl.interactions.button;
 
 import fr.alexpado.jda.interactions.impl.InteractionTargetImpl;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionTarget;
+import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInteractionTarget;
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionTarget;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
@@ -11,7 +12,7 @@ import java.lang.reflect.Method;
 /**
  * Class implementing {@link InteractionTarget} being the execution target of {@link ButtonInteraction}.
  */
-public class ButtonInteractionTargetImpl extends InteractionTargetImpl<ButtonInteraction> {
+public class ButtonInteractionTargetImpl extends InteractionTargetImpl<ButtonInteraction> implements ButtonInteractionTarget {
 
     /**
      * Create a new {@link SlashInteractionTarget} implementation instance.
