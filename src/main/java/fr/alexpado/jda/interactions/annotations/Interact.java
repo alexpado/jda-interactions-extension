@@ -1,6 +1,5 @@
 package fr.alexpado.jda.interactions.annotations;
 
-import fr.alexpado.jda.interactions.enums.InteractionType;
 import fr.alexpado.jda.interactions.enums.SlashTarget;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -31,13 +30,6 @@ public @interface Interact {
      * @return The interaction's description.
      */
     String description();
-
-    /**
-     * The type to which this interaction is a target.
-     *
-     * @return The interaction's type.
-     */
-    InteractionType type() default InteractionType.NONE;
 
     /**
      * The context in which this interaction can be used.

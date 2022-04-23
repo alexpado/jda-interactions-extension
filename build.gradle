@@ -9,7 +9,7 @@ plugins {
     id 'org.ajoberstar.reckon' version '0.16.1'
 }
 
-def generalCharset = StandardCharsets.UTF_8.name();
+def generalCharset = StandardCharsets.UTF_8.name()
 
 reckon {
     stages('dev', 'beta', 'rc', 'final')
@@ -35,7 +35,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
-    implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-alpha.9'
+    implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-alpha.10'
 }
 
 test {

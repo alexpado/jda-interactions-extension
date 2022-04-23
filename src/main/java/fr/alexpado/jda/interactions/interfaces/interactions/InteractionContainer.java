@@ -1,63 +1,97 @@
 package fr.alexpado.jda.interactions.interfaces.interactions;
 
-import fr.alexpado.jda.interactions.annotations.Interact;
-import fr.alexpado.jda.interactions.enums.InteractionType;
-import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
-import fr.alexpado.jda.interactions.meta.InteractionMeta;
-import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import fr.alexpado.jda.interactions.entities.DispatchEvent;
+import net.dv8tion.jda.api.interactions.Interaction;
 
-import java.util.List;
+import java.net.URI;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
-public interface InteractionContainer {
-
-    /**
-     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be
-     * called.
-     *
-     * The object must have at least one public method annotated with {@link Interact} for this call to serve a
-     * purpose.
-     *
-     * @param holder
-     *         The object to add.
-     */
-    void registerInteraction(Object holder);
+/**
+ * Interface representing an object being capable of holding a reference to multiple {@link InteractionTarget}.
+ *
+ * @param <T>
+ *         The {@link InteractionTarget} precise type.
+ * @param <V>
+ *         The type of event the {@link InteractionTarget} is capable of handling.
+ */
+public interface InteractionContainer<T extends InteractionTarget<V>, V extends Interaction> {
 
     /**
-     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple
-     * interaction on-the-fly without bothering with annotations.
+     * Retrieve the schema for the {@link URI} of each {@link InteractionTarget}.
      *
-     * @param meta
-     *         The {@link InteractionMeta} of the new interaction.
-     * @param item
-     *         The {@link ExecutableItem} to use when executing the interaction.
+     * @return The schema
      */
-    void registerInteraction(InteractionMeta meta, ExecutableItem item);
+    String getInteractionSchema();
 
     /**
-     * Register a new {@link InteractionItem}.
+     * Create an {@link URI} matching this {@link InteractionContainer}.
      *
-     * @param item
-     *         The {@link InteractionItem}.
+     * @param path
+     *         The path without schema.
+     *
+     * @return An {@link URI}.
      */
-    void registerInteraction(InteractionItem item);
+    URI createURI(String path);
 
     /**
-     * Build this {@link InteractionContainer} and add all {@link InteractionItem} having their interaction type set to
-     * {@link InteractionType#SLASH} as Discord Slash Commands.
+     * Register the provided {@link InteractionTarget} into this {@link InteractionContainer}.
      *
-     * @param updateAction
-     *         The {@link CommandListUpdateAction} to use to register slash commands.
+     * @param target
+     *         The {@link InteractionTarget} to register.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return True if it has been registered, false otherwise.
      */
-    CommandListUpdateAction build(CommandListUpdateAction updateAction);
+    boolean register(T target);
 
     /**
-     * Get all {@link InteractionItem} present in this {@link InteractionContainer}.
+     * Retrieve all {@link InteractionTarget} registered so far.
      *
-     * @return A list of {@link InteractionItem}.
+     * @return A list of {@link InteractionTarget}
      */
-    List<InteractionItem> getInteractionItems();
+    Map<URI, T> getInteractions();
 
+    /**
+     * Try to find an {@link InteractionTarget} matching the {@link URI}.
+     *
+     * @param uri
+     *         The {@link URI} to match.
+     *
+     * @return An optional {@link InteractionTarget}
+     */
+    Optional<T> resolve(URI uri);
+
+    /**
+     * Called when an {@link DispatchEvent} is being fired.
+     *
+     * @param event
+     *         The {@link DispatchEvent}
+     *
+     * @return An object representing the interaction result.
+     *
+     * @throws Exception
+     *         Any exception is possible, as exception thrown by an {@link InteractionTarget} will be forwarded.
+     */
+    Object dispatch(DispatchEvent<V> event) throws Exception;
+
+    /**
+     * Add a mapping class to the dependency map used as parameters injection source. Using {@link Supplier} allow to
+     * lazy-load the value.
+     *
+     * @param clazz
+     *         The class type to map.
+     * @param mapper
+     *         The {@link Injection} allowing a lazy-load of the mapping value.
+     * @param <K>
+     *         The class type to map.
+     */
+    <K> void addClassMapping(Class<K> clazz, Injection<V, K> mapper);
+
+    /**
+     * Retrieve all mapping used for the parameter injection.
+     *
+     * @return A map.
+     */
+    Map<Class<?>, Injection<V, ?>> getMappedClasses();
 }

@@ -54,6 +54,7 @@ public @interface Option {
      *     <li>{@link OptionType#CHANNEL}: Allow the user to select a channel. On the client, this include both {@link VoiceChannel}, {@link TextChannel} and {@link Category}. (Parameter type is {@link GuildChannel})</li>
      *     <li>{@link OptionType#ROLE}: Allow the user to select a role. (Parameter type is {@link Role})</li>
      *     <li>{@link OptionType#MENTIONABLE}: Allow the user to select anything that can be mentioned. (Parameter type is {@link IMentionable})</li>
+     *     <li>{@link OptionType#ATTACHMENT}: Allow the user to attach a file to the interaction. (Parameter type is {@link Message.Attachment})</li>
      * </ul>
      *
      * @return The option's type.
