@@ -10,6 +10,7 @@ import fr.alexpado.jda.interactions.interfaces.interactions.autocomplete.Autocom
 import fr.alexpado.jda.interactions.meta.ChoiceMeta;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import fr.alexpado.jda.interactions.meta.OptionMeta;
+import fr.alexpado.jda.interactions.responses.AutoCompleteResponse;
 import net.dv8tion.jda.api.interactions.AutoCompleteQuery;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -55,7 +56,7 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
      * @see InteractionResponseHandler
      */
     @Override
-    public List<ChoiceMeta> execute(DispatchEvent<CommandAutoCompleteInteraction> event, Map<Class<?>, Injection<DispatchEvent<CommandAutoCompleteInteraction>, ?>> mapping) {
+    public AutoCompleteResponse execute(DispatchEvent<CommandAutoCompleteInteraction> event, Map<Class<?>, Injection<DispatchEvent<CommandAutoCompleteInteraction>, ?>> mapping) {
 
         CommandAutoCompleteInteraction interaction = event.getInteraction();
         AutoCompleteQuery              focused     = interaction.getFocusedOption();
@@ -65,18 +66,25 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
         OptionType type  = focused.getType();
 
         if (this.dynamicChoices.containsKey(name)) {
-            return this.dynamicChoices.get(name).get().stream().filter(choice -> choice.contains(value)).toList();
+            return () -> this.dynamicChoices.get(name)
+                                            .get()
+                                            .stream()
+                                            .filter(choice -> choice.contains(value))
+                                            .toList();
         }
 
         // Dynamic option not found, returning static default value.
         for (OptionMeta option : this.meta.getOptions()) {
             if (option.getName().equals(name)) {
-                return option.getChoices().stream().filter(choice -> choice.contains(value)).toList();
+                return () -> option.getChoices()
+                                   .stream()
+                                   .filter(choice -> choice.contains(value))
+                                   .toList();
             }
         }
 
         // Nothing to autocomplete
-        return Collections.emptyList();
+        return Collections::emptyList;
     }
 
     /**
