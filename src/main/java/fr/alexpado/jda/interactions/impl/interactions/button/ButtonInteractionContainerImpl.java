@@ -149,6 +149,9 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
     @Override
     public URI getEventUri(ButtonInteraction event) {
 
+        if (event.getComponentId().matches(".*://.*")) {
+            return URI.create(event.getComponentId());
+        }
         return this.createURI(event.getComponentId());
     }
 

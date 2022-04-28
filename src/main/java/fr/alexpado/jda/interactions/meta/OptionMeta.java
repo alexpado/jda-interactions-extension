@@ -20,6 +20,7 @@ public class OptionMeta {
     private final String           description;
     private final List<ChoiceMeta> choices;
     private final boolean          required;
+    private final boolean          autoCompletable;
     private final OptionType       type;
 
     /**
@@ -33,12 +34,14 @@ public class OptionMeta {
      *         Define if the option is required. For {@link SlashCommandInteraction}, it will prevent the user to issue
      *         the command if not all required options are set. For {@link ButtonInteraction}, it will prevent the
      *         execution of the associated {@link InteractionTarget} with an exception.
+     * @param autoCompletable
+     *         Define if the option is auto-completable.
      * @param type
      *         The option type.
      */
-    public OptionMeta(String name, String description, boolean required, OptionType type) {
+    public OptionMeta(String name, String description, boolean required, boolean autoCompletable, OptionType type) {
 
-        this(name, description, required, type, Collections.emptyList());
+        this(name, description, required, autoCompletable, type, Collections.emptyList());
     }
 
     /**
@@ -52,18 +55,21 @@ public class OptionMeta {
      *         Define if the option is required. For {@link SlashCommandInteraction}, it will prevent the user to issue
      *         the command if not all required options are set. For {@link ButtonInteraction}, it will prevent the
      *         execution of the associated {@link InteractionTarget} with an exception.
+     * @param autoCompletable
+     *         Define if the option is auto-completable.
      * @param type
      *         The option type.
      * @param choices
      *         The option {@link ChoiceMeta} list.
      */
-    public OptionMeta(String name, String description, boolean required, OptionType type, List<ChoiceMeta> choices) {
+    public OptionMeta(String name, String description, boolean required, boolean autoCompletable, OptionType type, List<ChoiceMeta> choices) {
 
-        this.name        = name;
-        this.description = description;
-        this.choices     = choices;
-        this.required    = required;
-        this.type        = type;
+        this.name            = name;
+        this.description     = description;
+        this.choices         = choices;
+        this.required        = required;
+        this.autoCompletable = autoCompletable;
+        this.type            = type;
     }
 
     /**
@@ -74,11 +80,12 @@ public class OptionMeta {
      */
     public OptionMeta(Option option) {
 
-        this.name        = option.name();
-        this.description = option.description();
-        this.choices     = Arrays.stream(option.choices()).map(ChoiceMeta::new).toList();
-        this.required    = option.required();
-        this.type        = option.type();
+        this.name            = option.name();
+        this.description     = option.description();
+        this.choices         = Arrays.stream(option.choices()).map(ChoiceMeta::new).toList();
+        this.required        = option.required();
+        this.autoCompletable = option.autoComplete();
+        this.type            = option.type();
     }
 
     /**
@@ -122,6 +129,16 @@ public class OptionMeta {
     }
 
     /**
+     * Check if this {@link OptionMeta} is auto-completable.
+     *
+     * @return True if auto-completable, false otherwise.
+     */
+    public boolean isAutoCompletable() {
+
+        return this.autoCompletable;
+    }
+
+    /**
      * Retrieve this {@link OptionMeta} {@link OptionType}.
      *
      * @return The {@link OptionType}.
@@ -138,7 +155,7 @@ public class OptionMeta {
      */
     public OptionData createOptionData() {
 
-        OptionData optionData = new OptionData(this.getType(), this.getName(), this.getDescription(), this.isRequired());
+        OptionData optionData = new OptionData(this.getType(), this.getName(), this.getDescription(), this.isRequired(), this.isAutoCompletable());
 
         for (ChoiceMeta choice : this.getChoices()) {
             if (OptionType.INTEGER == this.getType()) {

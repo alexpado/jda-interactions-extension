@@ -44,6 +44,13 @@ public @interface Option {
     boolean required() default false;
 
     /**
+     * Define if this option can be auto-completed.
+     *
+     * @return True if auto-completable, false otherwise.
+     */
+    boolean autoComplete() default false;
+
+    /**
      * The type of the option. This will affect this option auto-complete behaviour in the Discord client.
      *
      * <ul>
