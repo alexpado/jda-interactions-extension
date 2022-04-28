@@ -22,12 +22,14 @@ public interface ITimedAction extends AutoCloseable {
     /**
      * Start the timing transaction of the current {@link ITimedAction}.
      *
+     * @param transaction
+     *         The transaction name
      * @param name
      *         The name of this timing transaction.
      * @param description
      *         The description of this timing transaction.
      */
-    void open(String name, String description);
+    void open(String transaction, String name, String description);
 
     /**
      * Start an action, opening a sub-transaction withing the actual timing. Calling this multiple time will open

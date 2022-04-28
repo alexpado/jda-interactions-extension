@@ -8,13 +8,15 @@ public class NoopTimedAction implements ITimedAction {
     /**
      * Start the timing transaction of the current {@link ITimedAction}.
      *
+     * @param transaction
+     *         The transaction name
      * @param name
      *         The name of this timing transaction.
      * @param description
      *         The description of this timing transaction.
      */
     @Override
-    public void open(String name, String description) {
+    public void open(String transaction, String name, String description) {
 
     }
 

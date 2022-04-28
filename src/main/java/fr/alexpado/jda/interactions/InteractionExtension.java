@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import java.util.Map;
  * This class is the one containing the main logic to redirect an {@link Interaction} to the right
  * {@link InteractionContainer}.
  *
- * @see InteractionExtension#run(Class, Interaction)
+ * @see InteractionExtension#run(String, Class, Interaction)
  */
 @SuppressWarnings("unused")
 public class InteractionExtension extends ListenerAdapter {
@@ -180,6 +181,8 @@ public class InteractionExtension extends ListenerAdapter {
     /**
      * Execute the interaction flow with the provided {@link Interaction}.
      *
+     * @param transactionName
+     *         The transaction name for this execution.
      * @param type
      *         The class of the interaction.
      * @param discordEvent
@@ -193,10 +196,10 @@ public class InteractionExtension extends ListenerAdapter {
      */
     // Suppressing warning for unchecked cast as it is type-safe due to the nature of the register methods signature.
     @SuppressWarnings("unchecked")
-    public <T extends Interaction, V extends InteractionTarget<T>, K extends InteractionContainer<V, T>> void run(Class<T> type, T discordEvent) {
+    public <T extends Interaction, V extends InteractionTarget<T>, K extends InteractionContainer<V, T>> void run(String transactionName, Class<T> type, T discordEvent) {
 
         try (ITimedAction timedAction = ITimedAction.create()) {
-            timedAction.open("interaction", "Interaction received");
+            timedAction.open(transactionName, "interaction", "Interaction received");
 
             if (!this.handlers.containsKey(type)) {
                 throw new IllegalStateException("No handler for the provided interaction.");
@@ -251,8 +254,10 @@ public class InteractionExtension extends ListenerAdapter {
 
         Sentry.withScope(scope -> {
             this.createScope(scope, event, "slash", event.getCommandPath());
+            String transaction = "slash://%s".formatted(event.getCommandPath());
+
             try {
-                this.run(SlashCommandInteraction.class, event);
+                this.run(transaction, SlashCommandInteraction.class, event);
             } catch (Exception e) {
                 Sentry.captureException(e);
             }
@@ -264,8 +269,16 @@ public class InteractionExtension extends ListenerAdapter {
 
         Sentry.withScope(scope -> {
             this.createScope(scope, event, "button", event.getComponentId());
+            String transation;
             try {
-                this.run(ButtonInteraction.class, event);
+                URI uri = URI.create(event.getComponentId());
+                transation = "%s://%s%s".formatted(uri.getScheme(), uri.getHost(), uri.getPath());
+            } catch (Exception ignore) {
+                transation = "button://%s".formatted(event.getComponentId());
+            }
+
+            try {
+                this.run(transation, ButtonInteraction.class, event);
             } catch (Exception e) {
                 Sentry.captureException(e);
             }
@@ -277,8 +290,9 @@ public class InteractionExtension extends ListenerAdapter {
 
         Sentry.withScope(scope -> {
             this.createScope(scope, event, "auto-complete", event.getCommandPath());
+            String transaction = "complete://%s".formatted(event.getCommandPath());
             try {
-                this.run(CommandAutoCompleteInteraction.class, event);
+                this.run(transaction, CommandAutoCompleteInteraction.class, event);
             } catch (Exception e) {
                 Sentry.captureException(e);
             }
