@@ -1,7 +1,8 @@
 package fr.alexpado.jda.interactions.impl.interactions.slash;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
-import fr.alexpado.jda.interactions.ext.InteractionCommandData;
+import fr.alexpado.jda.interactions.ext.discord.InteractionCommandData;
+import fr.alexpado.jda.interactions.ext.sentry.ITimedAction;
 import fr.alexpado.jda.interactions.impl.interactions.DefaultInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponseHandler;
@@ -10,6 +11,7 @@ import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteracti
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionTarget;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import fr.alexpado.jda.interactions.responses.SlashResponse;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -94,10 +96,11 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
      * @return A {@link DispatchEvent}.
      */
     @Override
-    public DispatchEvent<SlashCommandInteraction> handle(SlashCommandInteraction event) {
+    public DispatchEvent<SlashCommandInteraction> handle(ITimedAction timedAction, SlashCommandInteraction event) {
 
         URI uri = this.getEventUri(event);
 
+        timedAction.action("read-options", "Reading command options");
         Map<String, Object> options = new HashMap<>();
 
         for (OptionMapping option : event.getOptions()) {
@@ -114,8 +117,9 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
                 default -> null;
             });
         }
+        timedAction.endAction();
 
-        return new DispatchEvent<>(uri, event, options);
+        return new DispatchEvent<>(timedAction, uri, event, options);
     }
 
     /**
@@ -146,11 +150,17 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
         if (event.getInteraction() instanceof IReplyCallback callback && response instanceof SlashResponse slashResponse) {
+            event.getTimedAction().action("build", "Building the response");
+            Message message = slashResponse.getMessage();
+            event.getTimedAction().endAction();
+
+            event.getTimedAction().action("replying", "Sending the reply");
             if (callback.isAcknowledged()) {
-                callback.getHook().editOriginal(slashResponse.getMessage()).complete();
+                callback.getHook().editOriginal(message).complete();
             } else {
-                callback.reply(slashResponse.getMessage()).setEphemeral(true).complete();
+                callback.reply(message).setEphemeral(slashResponse.isEphemeral()).complete();
             }
+            event.getTimedAction().endAction();
         }
     }
 

@@ -69,9 +69,11 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
     @Override
     public Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<T, ?>> mapping) throws Exception {
 
+        event.getTimedAction().action("injection", "Injecting parameters");
         Collection<Object> callParameters = new ArrayList<>();
 
         for (Parameter parameter : this.method.getParameters()) {
+            event.getTimedAction().action("param", "Injecting " + parameter.getName());
             String  name        = parameter.getName();
             String  type        = parameter.getType().getSimpleName();
             boolean isOption    = parameter.isAnnotationPresent(Param.class);
@@ -92,10 +94,15 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
             } else {
                 throw new InteractionDeclarationException(this.instance.getClass(), this.method, this.meta.getName(), "Unmapped parameter " + type);
             }
+            event.getTimedAction().endAction();
         }
+        event.getTimedAction().endAction();
 
         try {
-            return this.method.invoke(this.instance, callParameters.toArray(Object[]::new));
+            event.getTimedAction().action("invoke", "Running the interaction");
+            Object result = this.method.invoke(this.instance, callParameters.toArray(Object[]::new));
+            event.getTimedAction().endAction();
+            return result;
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof Exception ex) {
                 throw ex;

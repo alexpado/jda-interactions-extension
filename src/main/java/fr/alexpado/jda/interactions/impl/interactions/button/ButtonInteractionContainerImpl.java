@@ -11,6 +11,7 @@ import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInterac
 import fr.alexpado.jda.interactions.meta.OptionMeta;
 import fr.alexpado.jda.interactions.responses.ButtonResponse;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import org.jetbrains.annotations.Nullable;
@@ -179,19 +180,26 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
         if (event.getInteraction() instanceof ButtonInteraction callback && response instanceof ButtonResponse buttonResponse) {
+
+            event.getTimedAction().action("build", "Building the response");
+            Message message = buttonResponse.getMessage();
+            event.getTimedAction().endAction();
+
+            event.getTimedAction().action("replying", "Sending the reply");
             if (callback.isAcknowledged()) {
                 if (buttonResponse.shouldEditOriginalMessage()) {
-                    callback.getHook().editOriginal(buttonResponse.getMessage()).complete();
+                    callback.getHook().editOriginal(message).complete();
                 } else {
-                    callback.getHook().sendMessage(buttonResponse.getMessage()).complete();
+                    callback.getHook().sendMessage(message).complete();
                 }
             } else {
                 if (buttonResponse.shouldEditOriginalMessage()) {
-                    callback.editMessage(buttonResponse.getMessage()).complete();
+                    callback.editMessage(message).complete();
                 } else {
-                    callback.reply(buttonResponse.getMessage()).complete();
+                    callback.reply(message).complete();
                 }
             }
+            event.getTimedAction().endAction();
         }
     }
 }

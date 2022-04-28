@@ -1,4 +1,4 @@
-package fr.alexpado.jda.interactions.ext;
+package fr.alexpado.jda.interactions.ext.discord;
 
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import fr.alexpado.jda.interactions.meta.OptionMeta;

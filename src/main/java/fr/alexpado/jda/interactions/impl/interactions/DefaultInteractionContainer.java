@@ -2,6 +2,7 @@ package fr.alexpado.jda.interactions.impl.interactions;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.exceptions.InteractionNotFoundException;
+import fr.alexpado.jda.interactions.ext.sentry.ITimedAction;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import net.dv8tion.jda.api.interactions.Interaction;
 
@@ -149,8 +150,8 @@ public abstract class DefaultInteractionContainer<T extends InteractionTarget<U>
      * @return A {@link DispatchEvent}.
      */
     @Override
-    public DispatchEvent<U> handle(U event) {
+    public DispatchEvent<U> handle(ITimedAction timedAction, U event) {
 
-        return new DispatchEvent<>(this.getEventUri(event), event);
+        return new DispatchEvent<>(timedAction, this.getEventUri(event), event);
     }
 }

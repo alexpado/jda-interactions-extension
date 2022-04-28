@@ -14,4 +14,11 @@ public interface SlashResponse {
      * @return A {@link Message}
      */
     Message getMessage();
+
+    /**
+     * Check if this {@link SlashResponse} is ephemeral (ie: Only shown to the user who interacted).
+     *
+     * @return True if ephemeral, false otherwise.
+     */
+    boolean isEphemeral();
 }

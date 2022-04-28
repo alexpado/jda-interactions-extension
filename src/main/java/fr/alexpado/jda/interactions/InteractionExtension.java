@@ -1,6 +1,7 @@
 package fr.alexpado.jda.interactions;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
+import fr.alexpado.jda.interactions.ext.sentry.ITimedAction;
 import fr.alexpado.jda.interactions.impl.DefaultErrorHandler;
 import fr.alexpado.jda.interactions.impl.interactions.autocomplete.AutocompleteInteractionContainerImpl;
 import fr.alexpado.jda.interactions.impl.interactions.button.ButtonInteractionContainerImpl;
@@ -9,6 +10,11 @@ import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.interfaces.interactions.autocomplete.AutocompleteInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionContainer;
+import io.sentry.Scope;
+import io.sentry.Sentry;
+import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -164,41 +170,53 @@ public class InteractionExtension extends ListenerAdapter {
     @SuppressWarnings("unchecked")
     public <T extends Interaction, V extends InteractionTarget<T>, K extends InteractionContainer<V, T>> void run(Class<T> type, T discordEvent) {
 
-        if (!this.handlers.containsKey(type)) {
-            throw new IllegalStateException("No handler for the provided interaction.");
-        }
+        try (ITimedAction timedAction = ITimedAction.create()) {
+            timedAction.open("interaction", "Interaction received");
 
-        if (!this.containers.containsKey(type)) {
-            throw new IllegalStateException("No container for the provided interaction.");
-        }
-
-        InteractionEventHandler<T> handler   = (InteractionEventHandler<T>) this.handlers.get(type);
-        DispatchEvent<T>           event     = handler.handle(discordEvent);
-        K                          container = (K) this.containers.get(type);
-
-        try {
-            Object                     result = container.dispatch(event);
-            InteractionResponseHandler responseHandler;
-
-            // Prioritize self-contained feature
-            if (container instanceof InteractionResponseHandler localHandler && localHandler.canHandle(event, result)) {
-                responseHandler = localHandler;
-            } else {
-
-                responseHandler = this.responseHandlers.stream()
-                                                       .filter(registeredHandler -> registeredHandler.canHandle(event, result))
-                                                       .findAny()
-                                                       .orElse(null);
+            if (!this.handlers.containsKey(type)) {
+                throw new IllegalStateException("No handler for the provided interaction.");
             }
 
-            if (responseHandler == null) {
-                this.errorHandler.onNoResponseHandlerFound(event, result);
-                return;
+            if (!this.containers.containsKey(type)) {
+                throw new IllegalStateException("No container for the provided interaction.");
             }
 
-            responseHandler.handleResponse(event, result);
-        } catch (Exception e) {
-            this.errorHandler.handleException(event, e);
+            timedAction.action("handling", "Handling the interaction");
+            InteractionEventHandler<T> handler   = (InteractionEventHandler<T>) this.handlers.get(type);
+            DispatchEvent<T>           event     = handler.handle(timedAction, discordEvent);
+            K                          container = (K) this.containers.get(type);
+            timedAction.endAction();
+
+            try {
+                timedAction.action("dispatching", "Dispatching the interaction");
+                Object result = container.dispatch(event);
+                timedAction.endAction();
+
+                InteractionResponseHandler responseHandler;
+
+                timedAction.action("answering", "Finding and using the response handler");
+                // Prioritize self-contained feature
+                if (container instanceof InteractionResponseHandler localHandler && localHandler.canHandle(event, result)) {
+                    responseHandler = localHandler;
+                } else {
+
+                    responseHandler = this.responseHandlers.stream()
+                                                           .filter(registeredHandler -> registeredHandler.canHandle(event, result))
+                                                           .findAny()
+                                                           .orElse(null);
+                }
+
+                if (responseHandler == null) {
+                    this.errorHandler.onNoResponseHandlerFound(event, result);
+                    return;
+                }
+
+                responseHandler.handleResponse(event, result);
+                timedAction.endAction();
+            } catch (Exception e) {
+                Sentry.captureException(e);
+                this.errorHandler.handleException(event, e);
+            }
         }
     }
 
@@ -206,19 +224,69 @@ public class InteractionExtension extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 
-        this.run(SlashCommandInteraction.class, event);
+        Sentry.withScope(scope -> {
+            this.createScope(scope, event, "slash", event.getCommandPath());
+            try {
+                this.run(SlashCommandInteraction.class, event);
+            } catch (Exception e) {
+                Sentry.captureException(e);
+            }
+        });
     }
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 
-        this.run(ButtonInteraction.class, event);
+        Sentry.withScope(scope -> {
+            this.createScope(scope, event, "button", event.getComponentId());
+            try {
+                this.run(ButtonInteraction.class, event);
+            } catch (Exception e) {
+                Sentry.captureException(e);
+            }
+        });
     }
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
 
-        this.run(CommandAutoCompleteInteraction.class, event);
+        Sentry.withScope(scope -> {
+            this.createScope(scope, event, "auto-complete", event.getCommandPath());
+            try {
+                this.run(CommandAutoCompleteInteraction.class, event);
+            } catch (Exception e) {
+                Sentry.captureException(e);
+            }
+        });
     }
     // </editor-fold>
+
+
+    private void createScope(Scope scope, Interaction interaction, String type, String description) {
+
+        Map<String, String> extra   = new HashMap<>();
+        User                user    = interaction.getUser();
+        Channel             channel = interaction.getChannel();
+        Guild               guild   = interaction.getGuild();
+
+        scope.setTag("category", "interaction");
+        scope.setTag("type", "auto-complete");
+        scope.setTag("interaction", interaction.getId());
+        scope.setTag("description", description);
+
+        scope.setTag("user", user.getId());
+        extra.put("user", "%s#%s".formatted(user.getName(), user.getDiscriminator()));
+
+        if (channel != null) {
+            scope.setTag("channel", channel.getId());
+            extra.put("channel", channel.getName());
+        }
+
+        if (guild != null) {
+            scope.setTag("guild", guild.getId());
+            extra.put("guild", guild.getName());
+        }
+
+        scope.setContexts("Discord", extra);
+    }
 }
