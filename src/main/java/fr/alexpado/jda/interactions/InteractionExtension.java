@@ -308,13 +308,19 @@ public class InteractionExtension extends ListenerAdapter {
         Channel             channel = interaction.getChannel();
         Guild               guild   = interaction.getGuild();
 
+        io.sentry.protocol.User sentryUser = new io.sentry.protocol.User();
+        sentryUser.setId(user.getId());
+        sentryUser.setEmail("%s@discordapp.com".formatted(user.getId()));
+        sentryUser.setUsername(user.getAsTag());
+        scope.setUser(sentryUser);
+
         scope.setTag("category", "interaction");
         scope.setTag("type", "auto-complete");
         scope.setTag("interaction", interaction.getId());
         scope.setTag("description", description);
 
         scope.setTag("user", user.getId());
-        extra.put("user", "%s#%s".formatted(user.getName(), user.getDiscriminator()));
+        extra.put("user", user.getAsTag());
 
         if (channel != null) {
             scope.setTag("channel", channel.getId());
