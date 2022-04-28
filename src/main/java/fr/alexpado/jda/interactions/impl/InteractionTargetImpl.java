@@ -67,7 +67,7 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
      * @see InteractionResponseHandler
      */
     @Override
-    public Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<T, ?>> mapping) throws Exception {
+    public Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<DispatchEvent<T>, ?>> mapping) throws Exception {
 
         event.getTimedAction().action("injection", "Injecting parameters");
         Collection<Object> callParameters = new ArrayList<>();
@@ -85,9 +85,9 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
                 Param param = parameter.getAnnotation(Param.class);
                 callParameters.add(event.getOptions().get(param.value()));
             } else if (isInjection) {
-                Injection<T, ?> injection = mapping.get(parameter.getType());
+                Injection<DispatchEvent<T>, ?> injection = mapping.get(parameter.getType());
                 try {
-                    callParameters.add(injection.inject(event.getInteraction()).get());
+                    callParameters.add(injection.inject(event).get());
                 } catch (Exception e) {
                     throw new InteractionInjectionException(e, this.instance.getClass(), this.method, parameter);
                 }

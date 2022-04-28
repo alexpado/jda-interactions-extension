@@ -55,7 +55,7 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
      * @see InteractionResponseHandler
      */
     @Override
-    public List<ChoiceMeta> execute(DispatchEvent<CommandAutoCompleteInteraction> event, Map<Class<?>, Injection<CommandAutoCompleteInteraction, ?>> mapping) {
+    public List<ChoiceMeta> execute(DispatchEvent<CommandAutoCompleteInteraction> event, Map<Class<?>, Injection<DispatchEvent<CommandAutoCompleteInteraction>, ?>> mapping) {
 
         CommandAutoCompleteInteraction interaction = event.getInteraction();
         AutoCompleteQuery              focused     = interaction.getFocusedOption();

@@ -86,12 +86,12 @@ public interface InteractionContainer<T extends InteractionTarget<V>, V extends 
      * @param <K>
      *         The class type to map.
      */
-    <K> void addClassMapping(Class<K> clazz, Injection<V, K> mapper);
+    <K> void addClassMapping(Class<K> clazz, Injection<DispatchEvent<V>, K> mapper);
 
     /**
      * Retrieve all mapping used for the parameter injection.
      *
      * @return A map.
      */
-    Map<Class<?>, Injection<V, ?>> getMappedClasses();
+    Map<Class<?>, Injection<DispatchEvent<V>, ?>> getMappedClasses();
 }

@@ -12,14 +12,14 @@ import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInterac
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionContainer;
 import io.sentry.Scope;
 import io.sentry.Sentry;
-import net.dv8tion.jda.api.entities.Channel;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.InteractionType;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
@@ -68,6 +68,31 @@ public class InteractionExtension extends ListenerAdapter {
         this.registerHandler(SlashCommandInteraction.class, this.slashContainer);
         this.registerHandler(ButtonInteraction.class, this.buttonContainer);
         this.registerHandler(CommandAutoCompleteInteraction.class, this.autocompleteContainer);
+    }
+
+    /**
+     * Add all mapping for basic parameter injection.
+     */
+    public void useDefaultMapping() {
+
+        for (InteractionContainer<?, ?> container : this.containers.values()) {
+            container.addClassMapping(User.class, event -> event.getInteraction()::getUser);
+            container.addClassMapping(Channel.class, event -> event.getInteraction()::getChannel);
+            container.addClassMapping(GuildChannel.class, event -> event.getInteraction()::getGuildChannel);
+            container.addClassMapping(Guild.class, event -> event.getInteraction()::getGuild);
+            container.addClassMapping(ChannelType.class, event -> event.getInteraction()::getChannelType);
+            container.addClassMapping(InteractionType.class, event -> event.getInteraction()::getType);
+            container.addClassMapping(Member.class, event -> event.getInteraction()::getMember);
+            container.addClassMapping(MessageChannel.class, event -> event.getInteraction()::getMessageChannel);
+            container.addClassMapping(TextChannel.class, event -> event.getInteraction()::getTextChannel);
+            container.addClassMapping(NewsChannel.class, event -> event.getInteraction()::getNewsChannel);
+            container.addClassMapping(VoiceChannel.class, event -> event.getInteraction()::getVoiceChannel);
+            container.addClassMapping(PrivateChannel.class, event -> event.getInteraction()::getPrivateChannel);
+            container.addClassMapping(ThreadChannel.class, event -> event.getInteraction()::getThreadChannel);
+            container.addClassMapping(JDA.class, event -> event.getInteraction()::getJDA);
+            container.addClassMapping(Interaction.class, event -> event::getInteraction);
+            container.addClassMapping(ITimedAction.class, event -> event::getTimedAction);
+        }
     }
 
     /**

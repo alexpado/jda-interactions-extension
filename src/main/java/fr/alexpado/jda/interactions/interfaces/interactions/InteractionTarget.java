@@ -28,6 +28,6 @@ public interface InteractionTarget<T extends Interaction> {
      *         If the execution could not occur, or due to an userland exception defined in the interaction.
      * @see InteractionResponseHandler
      */
-    Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<T, ?>> mapping) throws Exception;
+    Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<DispatchEvent<T>, ?>> mapping) throws Exception;
 
 }

@@ -22,8 +22,8 @@ import java.util.function.Supplier;
  */
 public abstract class DefaultInteractionContainer<T extends InteractionTarget<U> & MetaContainer, U extends Interaction> implements InteractionContainer<T, U>, InteractionEventHandler<U> {
 
-    private final Map<URI, T>                    interactions;
-    private final Map<Class<?>, Injection<U, ?>> mappings;
+    private final Map<URI, T>                                   interactions;
+    private final Map<Class<?>, Injection<DispatchEvent<U>, ?>> mappings;
 
     /**
      * Create a new instance of this {@link InteractionContainer} implementation.
@@ -125,7 +125,7 @@ public abstract class DefaultInteractionContainer<T extends InteractionTarget<U>
      *         The {@link Injection} allowing a lazy-load of the mapping value.
      */
     @Override
-    public <K> void addClassMapping(Class<K> clazz, Injection<U, K> mapper) {
+    public <K> void addClassMapping(Class<K> clazz, Injection<DispatchEvent<U>, K> mapper) {
 
         this.getMappedClasses().put(clazz, mapper);
     }
@@ -136,7 +136,7 @@ public abstract class DefaultInteractionContainer<T extends InteractionTarget<U>
      * @return A map.
      */
     @Override
-    public Map<Class<?>, Injection<U, ?>> getMappedClasses() {
+    public Map<Class<?>, Injection<DispatchEvent<U>, ?>> getMappedClasses() {
 
         return this.mappings;
     }
