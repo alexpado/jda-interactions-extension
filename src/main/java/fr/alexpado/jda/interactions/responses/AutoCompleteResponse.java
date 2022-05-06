@@ -1,6 +1,6 @@
 package fr.alexpado.jda.interactions.responses;
 
-import fr.alexpado.jda.interactions.meta.ChoiceMeta;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 
 import java.util.List;
@@ -11,10 +11,10 @@ import java.util.List;
 public interface AutoCompleteResponse {
 
     /**
-     * Retrieve the {@link List} of {@link ChoiceMeta} that should be sent as response.
+     * Retrieve the {@link List} of {@link Command.Choice} that should be sent as response.
      *
-     * @return A {@link List} of {@link ChoiceMeta}.
+     * @return A {@link List} of {@link Command.Choice}.
      */
-    List<ChoiceMeta> getChoices();
+    List<Command.Choice> getChoices();
 
 }

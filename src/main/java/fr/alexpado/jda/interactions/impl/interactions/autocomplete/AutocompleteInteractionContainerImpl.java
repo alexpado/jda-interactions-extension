@@ -79,7 +79,6 @@ public class AutocompleteInteractionContainerImpl extends DefaultInteractionCont
             event.getTimedAction().action("build", "Building the response");
             List<Command.Choice> choices = completion.getChoices()
                                                      .stream()
-                                                     .map(meta -> new Command.Choice(meta.getId(), meta.getDisplay()))
                                                      .limit(OptionData.MAX_CHOICES)
                                                      .toList();
             event.getTimedAction().endAction();

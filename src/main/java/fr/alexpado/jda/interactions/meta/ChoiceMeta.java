@@ -1,6 +1,7 @@
 package fr.alexpado.jda.interactions.meta;
 
 import fr.alexpado.jda.interactions.annotations.Choice;
+import net.dv8tion.jda.api.interactions.commands.Command;
 
 /**
  * Class version of the annotation {@link Choice}.
@@ -68,6 +69,14 @@ public class ChoiceMeta {
 
         return this.id.toLowerCase().contains(other.toLowerCase()) ||
                this.display.toLowerCase().contains(other.toLowerCase());
+    }
+
+    /**
+     * @return This instance converted as {@link Command.Choice}.
+     */
+    public Command.Choice asChoice() {
+
+        return new Command.Choice(this.getDisplay(), this.getId());
     }
 
 }

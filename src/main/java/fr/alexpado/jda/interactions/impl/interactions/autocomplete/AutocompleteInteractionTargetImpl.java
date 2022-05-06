@@ -5,6 +5,7 @@ import fr.alexpado.jda.interactions.interfaces.interactions.Injection;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponseHandler;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionTarget;
 import fr.alexpado.jda.interactions.interfaces.interactions.MetaContainer;
+import fr.alexpado.jda.interactions.interfaces.interactions.autocomplete.AutoCompleteProvider;
 import fr.alexpado.jda.interactions.interfaces.interactions.autocomplete.AutocompleteInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.autocomplete.AutocompleteInteractionTarget;
 import fr.alexpado.jda.interactions.meta.ChoiceMeta;
@@ -13,10 +14,8 @@ import fr.alexpado.jda.interactions.meta.OptionMeta;
 import fr.alexpado.jda.interactions.responses.AutoCompleteResponse;
 import net.dv8tion.jda.api.interactions.AutoCompleteQuery;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +26,8 @@ import java.util.function.Supplier;
  */
 public class AutocompleteInteractionTargetImpl implements AutocompleteInteractionTarget {
 
-    private final InteractionMeta                         meta;
-    private final Map<String, Supplier<List<ChoiceMeta>>> dynamicChoices;
+    private final InteractionMeta                   meta;
+    private final Map<String, AutoCompleteProvider> completionProviders;
 
     /**
      * Create a new instance of this {@link AutocompleteInteractionContainer} implementation.
@@ -38,8 +37,8 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
      */
     public AutocompleteInteractionTargetImpl(InteractionMeta meta) {
 
-        this.meta           = meta;
-        this.dynamicChoices = new HashMap<>();
+        this.meta                = meta;
+        this.completionProviders = new HashMap<>();
     }
 
     /**
@@ -61,30 +60,20 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
         CommandAutoCompleteInteraction interaction = event.getInteraction();
         AutoCompleteQuery              focused     = interaction.getFocusedOption();
 
-        String     name  = focused.getName();
-        String     value = focused.getValue();
-        OptionType type  = focused.getType();
+        String name  = focused.getName();
+        String value = focused.getValue();
 
-        if (this.dynamicChoices.containsKey(name)) {
-            return () -> this.dynamicChoices.get(name)
-                                            .get()
-                                            .stream()
-                                            .filter(choice -> choice.contains(value))
-                                            .toList();
+        if (this.completionProviders.containsKey(name)) {
+            return () -> this.completionProviders.get(name).complete(event, name, value);
         }
 
-        // Dynamic option not found, returning static default value.
-        for (OptionMeta option : this.meta.getOptions()) {
-            if (option.getName().equals(name)) {
-                return () -> option.getChoices()
-                                   .stream()
-                                   .filter(choice -> choice.contains(value))
-                                   .toList();
-            }
-        }
-
-        // Nothing to autocomplete
-        return Collections::emptyList;
+        return () -> this.meta.getOptions().stream()
+                              .filter(option -> option.getName().equals(name))
+                              .map(OptionMeta::getChoices)
+                              .flatMap(List::stream)
+                              .filter(choice -> choice.contains(value))
+                              .map(ChoiceMeta::asChoice)
+                              .toList();
     }
 
     /**
@@ -92,14 +81,13 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
      *
      * @param name
      *         The name of the option
-     * @param generator
+     * @param provider
      *         The {@link Supplier} giving the list of autocompletion possible.
      */
     @Override
-    public void addDynamicMapping(String name, Supplier<List<ChoiceMeta>> generator) {
+    public void addCompletionProvider(String name, AutoCompleteProvider provider) {
 
-        // Overwriting the existing one ensure to keep it always up to date.
-        this.dynamicChoices.put(name, generator);
+        this.completionProviders.put(name, provider);
     }
 
     /**
@@ -109,9 +97,9 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
      *         The name of the option
      */
     @Override
-    public void removeDynamicMapping(String name) {
+    public void removeCompletionProvider(String name) {
 
-        this.dynamicChoices.remove(name);
+        this.completionProviders.remove(name);
     }
 
     /**
