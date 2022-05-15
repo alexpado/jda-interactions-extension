@@ -28,7 +28,6 @@ public class DefaultErrorHandler implements InteractionErrorHandler {
         if (event.getInteraction() instanceof IReplyCallback callback) {
             if (exception instanceof DiscordEmbeddable embeddable) {
                 EmbedBuilder builder = embeddable.asEmbed();
-                builder.setFooter("You can remove this message by creating your own error handler.");
                 this.answer(callback, builder.build());
                 return;
             }
@@ -74,4 +73,5 @@ public class DefaultErrorHandler implements InteractionErrorHandler {
             interaction.replyEmbeds(embed).setEphemeral(true).complete();
         }
     }
+
 }
