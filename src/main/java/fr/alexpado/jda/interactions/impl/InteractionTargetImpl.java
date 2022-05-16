@@ -10,6 +10,8 @@ import fr.alexpado.jda.interactions.interfaces.interactions.InteractionTarget;
 import fr.alexpado.jda.interactions.interfaces.interactions.MetaContainer;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,19 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
     @Override
     public Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<DispatchEvent<T>, ?>> mapping) throws Exception {
 
+        if (this.getMeta().isDeferred()) {
+            boolean     reply       = this.getMeta().shouldReply();
+            Interaction interaction = event.getInteraction();
+
+            if (reply && interaction instanceof IReplyCallback callback) {
+                callback.deferReply(this.getMeta().isHidden()).complete();
+            } else if (!reply && interaction instanceof IMessageEditCallback callback) {
+                callback.deferEdit().complete();
+            } else {
+                throw new UnsupportedOperationException("Couldn't pre-handle deferred request");
+            }
+        }
+
         event.getTimedAction().action("injection", "Injecting parameters");
         Collection<Object> callParameters = new ArrayList<>();
 
@@ -121,4 +136,5 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
 
         return this.meta;
     }
+
 }

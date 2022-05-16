@@ -19,6 +19,7 @@ public class InteractionMeta {
     private final List<OptionMeta> options;
     private final boolean          hide;
     private final boolean          defer;
+    private final boolean          reply;
 
     /**
      * Create a new {@link InteractionMeta}.
@@ -37,8 +38,10 @@ public class InteractionMeta {
      *         {@link Interaction}.
      * @param defer
      *         Define if the response might take a while to be generated. If true, the response will be deferred.
+     * @param reply
+     *         Define if the response will create a new message or edit the original.
      */
-    public InteractionMeta(String name, String description, SlashTarget target, List<OptionMeta> options, boolean hide, boolean defer) {
+    public InteractionMeta(String name, String description, SlashTarget target, List<OptionMeta> options, boolean hide, boolean defer, boolean reply) {
 
         this.name        = name;
         this.description = description;
@@ -46,6 +49,7 @@ public class InteractionMeta {
         this.options     = options;
         this.hide        = hide;
         this.defer       = defer;
+        this.reply       = reply;
     }
 
     /**
@@ -108,6 +112,16 @@ public class InteractionMeta {
     public boolean isDeferred() {
 
         return this.defer;
+    }
+
+    /**
+     * Define if the response will create a new message or edit the original.
+     *
+     * @return True if a new message should be created, false otherwise.
+     */
+    public boolean shouldReply() {
+
+        return this.reply;
     }
 
 }
