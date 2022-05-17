@@ -229,9 +229,9 @@ public class InteractionExtension extends ListenerAdapter {
                 } else {
 
                     responseHandler = this.responseHandlers.stream()
-                                                           .filter(registeredHandler -> registeredHandler.canHandle(event, result))
-                                                           .findAny()
-                                                           .orElse(null);
+                            .filter(registeredHandler -> registeredHandler.canHandle(event, result))
+                            .findAny()
+                            .orElse(null);
                 }
 
                 if (responseHandler == null) {
@@ -252,51 +252,60 @@ public class InteractionExtension extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 
-        Sentry.withScope(scope -> {
+        Sentry.configureScope(scope -> {
             this.createScope(scope, event, "slash", event.getCommandPath());
-            String transaction = "slash://%s".formatted(event.getCommandPath());
-
-            try {
-                this.run(transaction, SlashCommandInteraction.class, event);
-            } catch (Exception e) {
-                Sentry.captureException(e);
-            }
         });
+
+        String transaction = "slash://%s".formatted(event.getCommandPath());
+
+        try {
+            this.run(transaction, SlashCommandInteraction.class, event);
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
+        Sentry.popScope();
     }
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 
-        Sentry.withScope(scope -> {
+        Sentry.configureScope(scope -> {
             this.createScope(scope, event, "button", event.getComponentId());
-            String transation;
-            try {
-                URI uri = URI.create(event.getComponentId());
-                transation = "%s://%s%s".formatted(uri.getScheme(), uri.getHost(), uri.getPath());
-            } catch (Exception ignore) {
-                transation = "button://%s".formatted(event.getComponentId());
-            }
-
-            try {
-                this.run(transation, ButtonInteraction.class, event);
-            } catch (Exception e) {
-                Sentry.captureException(e);
-            }
         });
+
+        String transation;
+        try {
+            URI uri = URI.create(event.getComponentId());
+            transation = "%s://%s%s".formatted(uri.getScheme(), uri.getHost(), uri.getPath());
+        } catch (Exception ignore) {
+            transation = "button://%s".formatted(event.getComponentId());
+        }
+
+        try {
+            this.run(transation, ButtonInteraction.class, event);
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
+        Sentry.popScope();
     }
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
 
-        Sentry.withScope(scope -> {
+        Sentry.configureScope(scope -> {
             this.createScope(scope, event, "auto-complete", event.getCommandPath());
-            String transaction = "complete://%s".formatted(event.getCommandPath());
-            try {
-                this.run(transaction, CommandAutoCompleteInteraction.class, event);
-            } catch (Exception e) {
-                Sentry.captureException(e);
-            }
         });
+
+        String transaction = "complete://%s".formatted(event.getCommandPath());
+        try {
+            this.run(transaction, CommandAutoCompleteInteraction.class, event);
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
+        Sentry.popScope();
     }
     // </editor-fold>
 
@@ -334,4 +343,5 @@ public class InteractionExtension extends ListenerAdapter {
 
         scope.setContexts("Discord", extra);
     }
+
 }
