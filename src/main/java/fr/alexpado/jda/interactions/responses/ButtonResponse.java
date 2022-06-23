@@ -24,4 +24,11 @@ public interface ButtonResponse {
      */
     boolean shouldEditOriginalMessage();
 
+    /**
+     * Check if this {@link SlashResponse} is ephemeral (ie: Only shown to the user who interacted).
+     *
+     * @return True if ephemeral, false otherwise.
+     */
+    boolean isEphemeral();
+
 }

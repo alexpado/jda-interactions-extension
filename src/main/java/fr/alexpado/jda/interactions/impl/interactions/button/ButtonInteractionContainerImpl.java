@@ -193,16 +193,17 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
                 if (buttonResponse.shouldEditOriginalMessage()) {
                     callback.getHook().editOriginal(message).complete();
                 } else {
-                    callback.getHook().sendMessage(message).complete();
+                    callback.getHook().sendMessage(message).setEphemeral(buttonResponse.isEphemeral()).complete();
                 }
             } else {
                 if (buttonResponse.shouldEditOriginalMessage()) {
                     callback.editMessage(message).complete();
                 } else {
-                    callback.reply(message).complete();
+                    callback.reply(message).setEphemeral(buttonResponse.isEphemeral()).complete();
                 }
             }
             event.getTimedAction().endAction();
         }
     }
+
 }
