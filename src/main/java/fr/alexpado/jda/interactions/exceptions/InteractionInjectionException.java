@@ -90,4 +90,11 @@ public class InteractionInjectionException extends Exception implements DiscordE
 
         return builder;
     }
+
+    @Override
+    public boolean showToEveryone() {
+
+        return false;
+    }
+
 }

@@ -33,7 +33,7 @@ public class InteractionNotFoundException extends RuntimeException implements Di
     public <T extends Interaction> InteractionNotFoundException(InteractionContainer<?, T> container, DispatchEvent<T> event) {
 
         super(String.format("Interaction '%s' not found in container '%s'", event.getPath(), container.getClass()
-                                                                                                      .getName()));
+                .getName()));
         this.container = container;
         this.event     = event;
     }
@@ -77,4 +77,11 @@ public class InteractionNotFoundException extends RuntimeException implements Di
 
         return builder;
     }
+
+    @Override
+    public boolean showToEveryone() {
+
+        return false;
+    }
+
 }

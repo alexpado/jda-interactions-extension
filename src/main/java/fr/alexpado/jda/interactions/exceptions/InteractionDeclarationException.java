@@ -96,4 +96,11 @@ public class InteractionDeclarationException extends RuntimeException implements
 
         return builder;
     }
+
+    @Override
+    public boolean showToEveryone() {
+
+        return false;
+    }
+
 }

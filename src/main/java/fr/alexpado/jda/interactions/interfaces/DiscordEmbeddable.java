@@ -15,4 +15,12 @@ public interface DiscordEmbeddable {
      */
     EmbedBuilder asEmbed();
 
+    /**
+     * In case this {@link DiscordEmbeddable} is an {@link Exception}, check if the message should be displayed to
+     * everyone. If {@code false}, the message will be ephemeral.
+     *
+     * @return True if public, false otherwise.
+     */
+    boolean showToEveryone();
+
 }

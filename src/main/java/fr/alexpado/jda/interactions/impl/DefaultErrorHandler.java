@@ -28,14 +28,14 @@ public class DefaultErrorHandler implements InteractionErrorHandler {
         if (event.getInteraction() instanceof IReplyCallback callback) {
             if (exception instanceof DiscordEmbeddable embeddable) {
                 EmbedBuilder builder = embeddable.asEmbed();
-                this.answer(callback, builder.build());
+                this.answer(callback, builder.build(), !embeddable.showToEveryone());
                 return;
             }
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("An error occurred.");
             builder.setDescription(exception.getMessage());
             builder.setFooter("You can remove this message by creating your own error handler.");
-            this.answer(callback, builder.build());
+            this.answer(callback, builder.build(), true);
         }
 
         // If not IReplyCallback, well, that's it.
@@ -58,19 +58,19 @@ public class DefaultErrorHandler implements InteractionErrorHandler {
             builder.setDescription("Your interaction has been executed, but the response generated from the interaction target could not be handled.\n");
             builder.appendDescription("If you have created your own response handler, please make sure you registered it.");
             builder.setFooter("You can remove this message by creating your own error handler.");
-            this.answer(callback, builder.build());
+            this.answer(callback, builder.build(), true);
         }
 
         // If not IReplyCallback, well, that's it.
     }
 
 
-    private <T extends Interaction & IReplyCallback> void answer(T interaction, MessageEmbed embed) {
+    private <T extends Interaction & IReplyCallback> void answer(T interaction, MessageEmbed embed, boolean ephemeral) {
 
         if (interaction.isAcknowledged()) {
             interaction.getHook().editOriginalEmbeds(embed).complete();
         } else {
-            interaction.replyEmbeds(embed).setEphemeral(true).complete();
+            interaction.replyEmbeds(embed).setEphemeral(ephemeral).complete();
         }
     }
 
