@@ -10,6 +10,7 @@ import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.interfaces.interactions.autocomplete.AutocompleteInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionContainer;
+import fr.alexpado.jda.interactions.tools.InteractionUtils;
 import io.sentry.Scope;
 import io.sentry.Sentry;
 import net.dv8tion.jda.api.JDA;
@@ -21,6 +22,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionType;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import org.jetbrains.annotations.NotNull;
@@ -339,6 +341,16 @@ public class InteractionExtension extends ListenerAdapter {
         if (guild != null) {
             scope.setTag("guild", guild.getId());
             extra.put("guild", guild.getName());
+        }
+
+        if (interaction instanceof SlashCommandInteraction slash) {
+            Map<String, Object> options = new HashMap<>();
+
+            for (OptionMapping option : slash.getOptions()) {
+                options.put(option.getName(), InteractionUtils.extractOptionValue(option));
+            }
+
+            scope.setContexts("Interaction", options);
         }
 
         scope.setContexts("Discord", extra);

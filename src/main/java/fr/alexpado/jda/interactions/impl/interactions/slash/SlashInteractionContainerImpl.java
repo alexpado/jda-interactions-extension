@@ -11,6 +11,7 @@ import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteracti
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionTarget;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import fr.alexpado.jda.interactions.responses.SlashResponse;
+import fr.alexpado.jda.interactions.tools.InteractionUtils;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -104,18 +105,7 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
         Map<String, Object> options = new HashMap<>();
 
         for (OptionMapping option : event.getOptions()) {
-            options.put(option.getName(), switch (option.getType()) {
-                case BOOLEAN -> option.getAsBoolean();
-                case STRING -> option.getAsString();
-                case INTEGER -> option.getAsLong();
-                case CHANNEL -> option.getAsMessageChannel();
-                case USER -> option.getAsUser();
-                case ROLE -> option.getAsRole();
-                case MENTIONABLE -> option.getAsMentionable();
-                case NUMBER -> option.getAsDouble();
-                case ATTACHMENT -> option.getAsAttachment();
-                default -> null;
-            });
+            options.put(option.getName(), InteractionUtils.extractOptionValue(option));
         }
         timedAction.endAction();
 
@@ -184,4 +174,5 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
 
         return action;
     }
+
 }
