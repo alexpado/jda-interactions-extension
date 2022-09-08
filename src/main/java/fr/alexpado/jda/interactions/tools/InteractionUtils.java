@@ -23,7 +23,7 @@ public final class InteractionUtils {
             case BOOLEAN -> option.getAsBoolean();
             case STRING -> option.getAsString();
             case INTEGER -> option.getAsLong();
-            case CHANNEL -> option.getAsMessageChannel();
+            case CHANNEL -> option.getAsChannel();
             case USER -> option.getAsUser();
             case ROLE -> option.getAsRole();
             case MENTIONABLE -> option.getAsMentionable();
