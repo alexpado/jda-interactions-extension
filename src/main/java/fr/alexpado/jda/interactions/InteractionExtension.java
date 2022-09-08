@@ -28,10 +28,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class is the one containing the main logic to redirect an {@link Interaction} to the right
@@ -45,6 +42,7 @@ public class InteractionExtension extends ListenerAdapter {
     private final Map<Class<? extends Interaction>, InteractionEventHandler<?>> handlers;
     private final Map<Class<? extends Interaction>, InteractionContainer<?, ?>> containers;
     private final Collection<InteractionResponseHandler>                        responseHandlers;
+    private final Collection<InteractionPreprocessor>                           preprocessors;
 
     private final SlashInteractionContainer        slashContainer;
     private final ButtonInteractionContainer       buttonContainer;
@@ -59,6 +57,7 @@ public class InteractionExtension extends ListenerAdapter {
         this.handlers         = new HashMap<>();
         this.containers       = new HashMap<>();
         this.responseHandlers = new ArrayList<>();
+        this.preprocessors    = new ArrayList<>();
         this.errorHandler     = new DefaultErrorHandler();
 
         this.slashContainer        = new SlashInteractionContainerImpl();
@@ -87,11 +86,6 @@ public class InteractionExtension extends ListenerAdapter {
             container.addClassMapping(InteractionType.class, event -> event.getInteraction()::getType);
             container.addClassMapping(Member.class, event -> event.getInteraction()::getMember);
             container.addClassMapping(MessageChannel.class, event -> event.getInteraction()::getMessageChannel);
-            container.addClassMapping(TextChannel.class, event -> event.getInteraction()::getTextChannel);
-            container.addClassMapping(NewsChannel.class, event -> event.getInteraction()::getNewsChannel);
-            container.addClassMapping(VoiceChannel.class, event -> event.getInteraction()::getVoiceChannel);
-            container.addClassMapping(PrivateChannel.class, event -> event.getInteraction()::getPrivateChannel);
-            container.addClassMapping(ThreadChannel.class, event -> event.getInteraction()::getThreadChannel);
             container.addClassMapping(JDA.class, event -> event.getInteraction()::getJDA);
             container.addClassMapping(Interaction.class, event -> event::getInteraction);
             container.addClassMapping(ITimedAction.class, event -> event::getTimedAction);
@@ -181,6 +175,17 @@ public class InteractionExtension extends ListenerAdapter {
     }
 
     /**
+     * Register a new {@link InteractionPreprocessor}.
+     *
+     * @param preprocessor
+     *         The {@link InteractionPreprocessor} to register.
+     */
+    public void registerPreprocessor(InteractionPreprocessor preprocessor) {
+
+        this.preprocessors.add(preprocessor);
+    }
+
+    /**
      * Execute the interaction flow with the provided {@link Interaction}.
      *
      * @param transactionName
@@ -218,9 +223,23 @@ public class InteractionExtension extends ListenerAdapter {
             timedAction.endAction();
 
             try {
-                timedAction.action("dispatching", "Dispatching the interaction");
-                Object result = container.dispatch(event);
+                Object result = null;
+                timedAction.action("preprocessors", "Calling preprocessors");
+                for (InteractionPreprocessor preprocessor : this.preprocessors) {
+                    Optional<Object> optionalObject = preprocessor.preprocess(event);
+
+                    if (optionalObject.isPresent()) {
+                        result = optionalObject.get();
+                        break;
+                    }
+                }
                 timedAction.endAction();
+
+                if (result != null) {
+                    timedAction.action("dispatching", "Dispatching the interaction");
+                    result = container.dispatch(event);
+                    timedAction.endAction();
+                }
 
                 InteractionResponseHandler responseHandler;
 
@@ -230,10 +249,11 @@ public class InteractionExtension extends ListenerAdapter {
                     responseHandler = localHandler;
                 } else {
 
+                    Object finalResult = result;
                     responseHandler = this.responseHandlers.stream()
-                            .filter(registeredHandler -> registeredHandler.canHandle(event, result))
-                            .findAny()
-                            .orElse(null);
+                                                           .filter(registeredHandler -> registeredHandler.canHandle(event, finalResult))
+                                                           .findAny()
+                                                           .orElse(null);
                 }
 
                 if (responseHandler == null) {
@@ -310,7 +330,6 @@ public class InteractionExtension extends ListenerAdapter {
         Sentry.popScope();
     }
     // </editor-fold>
-
 
     private void createScope(Scope scope, Interaction interaction, String type, String description) {
 
