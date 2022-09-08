@@ -235,7 +235,7 @@ public class InteractionExtension extends ListenerAdapter {
                 }
                 timedAction.endAction();
 
-                if (result != null) {
+                if (result == null) {
                     timedAction.action("dispatching", "Dispatching the interaction");
                     result = container.dispatch(event);
                     timedAction.endAction();
