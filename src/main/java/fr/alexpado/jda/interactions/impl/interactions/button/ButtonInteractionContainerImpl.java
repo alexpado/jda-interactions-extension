@@ -14,6 +14,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -52,10 +54,10 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
 
         try {
             URI raw = new URI(uri.getScheme(),
-                    uri.getAuthority(),
-                    uri.getPath(),
-                    null, // Ignore the query part of the input url
-                    uri.getFragment());
+                              uri.getAuthority(),
+                              uri.getPath(),
+                              null, // Ignore the query part of the input url
+                              uri.getFragment());
 
             return super.resolve(raw);
         } catch (URISyntaxException e) {
@@ -189,17 +191,24 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
             event.getTimedAction().endAction();
 
             event.getTimedAction().action("replying", "Sending the reply");
+
+            MessageCreateBuilder cBuilder = MessageCreateBuilder.fromMessage(message);
+            MessageEditBuilder   eBuilder = MessageEditBuilder.fromMessage(message);
+
             if (callback.isAcknowledged()) {
                 if (buttonResponse.shouldEditOriginalMessage()) {
-                    callback.getHook().editOriginal(message).complete();
+                    callback.getHook().editOriginal(eBuilder.build()).complete();
                 } else {
-                    callback.getHook().sendMessage(message).setEphemeral(buttonResponse.isEphemeral()).complete();
+                    callback.getHook()
+                            .sendMessage(cBuilder.build())
+                            .setEphemeral(buttonResponse.isEphemeral())
+                            .complete();
                 }
             } else {
                 if (buttonResponse.shouldEditOriginalMessage()) {
-                    callback.editMessage(message).complete();
+                    callback.editMessage(eBuilder.build()).complete();
                 } else {
-                    callback.reply(message).setEphemeral(buttonResponse.isEphemeral()).complete();
+                    callback.reply(cBuilder.build()).setEphemeral(buttonResponse.isEphemeral()).complete();
                 }
             }
             event.getTimedAction().endAction();

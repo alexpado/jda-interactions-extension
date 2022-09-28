@@ -18,6 +18,8 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -144,11 +146,14 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
             Message message = slashResponse.getMessage();
             event.getTimedAction().endAction();
 
+            MessageCreateBuilder cBuilder = MessageCreateBuilder.fromMessage(message);
+            MessageEditBuilder   eBuilder = MessageEditBuilder.fromMessage(message);
+
             event.getTimedAction().action("replying", "Sending the reply");
             if (callback.isAcknowledged()) {
-                callback.getHook().editOriginal(message).complete();
+                callback.getHook().editOriginal(eBuilder.build()).complete();
             } else {
-                callback.reply(message).setEphemeral(slashResponse.isEphemeral()).complete();
+                callback.reply(cBuilder.build()).setEphemeral(slashResponse.isEphemeral()).complete();
             }
             event.getTimedAction().endAction();
         }

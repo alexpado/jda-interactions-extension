@@ -2,14 +2,17 @@ package fr.alexpado.jda.interactions.impl.handlers;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponseHandler;
-import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageRequest;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 /**
  * Class implementing the {@link InteractionResponseHandler} where its sole purpose is to handle null-responses.
@@ -48,11 +51,8 @@ public class SinkResponseHandler implements InteractionResponseHandler {
     @Override
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
-        //noinspection ChainOfInstanceofChecks
         if (event.getInteraction() instanceof SlashCommandInteraction slash) {
-            MessageBuilder builder = new MessageBuilder();
-            builder.setContent("*Nothing to display*");
-            this.answer(slash, builder.build());
+            this.answer(slash, (data) -> data.setContent("*Nothing to display*"));
         } else if (event.getInteraction() instanceof ButtonInteraction button) {
             if (!button.isAcknowledged()) {
                 button.deferReply().complete();
@@ -60,16 +60,19 @@ public class SinkResponseHandler implements InteractionResponseHandler {
         } else if (event.getInteraction() instanceof CommandAutoCompleteInteraction auto) {
             auto.replyChoices().complete();
         }
-
     }
 
-
-    private <T extends Interaction & IReplyCallback> void answer(T interaction, Message embed) {
+    private <T extends Interaction & IReplyCallback> void answer(T interaction, Consumer<MessageRequest<?>> consumer) {
 
         if (interaction.isAcknowledged()) {
-            interaction.getHook().editOriginal(embed).complete();
+            MessageEditBuilder builder = new MessageEditBuilder();
+            consumer.accept(builder);
+            interaction.getHook().editOriginal(builder.build()).complete();
         } else {
-            interaction.reply(embed).setEphemeral(true).complete();
+            MessageCreateBuilder builder = new MessageCreateBuilder();
+            consumer.accept(builder);
+            interaction.reply(builder.build()).setEphemeral(true).complete();
         }
     }
+
 }
