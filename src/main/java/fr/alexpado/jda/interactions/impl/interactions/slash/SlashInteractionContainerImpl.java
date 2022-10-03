@@ -12,12 +12,12 @@ import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteracti
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import fr.alexpado.jda.interactions.responses.SlashResponse;
 import fr.alexpado.jda.interactions.tools.InteractionUtils;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.utils.messages.AbstractMessageBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Class implementing {@link InteractionContainer} handling {@link SlashCommandInteraction} with target of type
@@ -143,16 +144,17 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
 
         if (event.getInteraction() instanceof IReplyCallback callback && response instanceof SlashResponse slashResponse) {
             event.getTimedAction().action("build", "Building the response");
-            Message message = slashResponse.getMessage();
-            event.getTimedAction().endAction();
+            Consumer<AbstractMessageBuilder<?, ?>> consumer = slashResponse.getHandler();
 
-            MessageCreateBuilder cBuilder = MessageCreateBuilder.fromMessage(message);
-            MessageEditBuilder   eBuilder = MessageEditBuilder.fromMessage(message);
+            MessageCreateBuilder cBuilder = new MessageCreateBuilder();
+            MessageEditBuilder   eBuilder = new MessageEditBuilder();
 
             event.getTimedAction().action("replying", "Sending the reply");
             if (callback.isAcknowledged()) {
                 callback.getHook().editOriginal(eBuilder.build()).complete();
+                consumer.accept(eBuilder);
             } else {
+                consumer.accept(cBuilder);
                 callback.reply(cBuilder.build()).setEphemeral(slashResponse.isEphemeral()).complete();
             }
             event.getTimedAction().endAction();

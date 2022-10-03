@@ -3,6 +3,9 @@ package fr.alexpado.jda.interactions.responses;
 import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInteractionTarget;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.AbstractMessageBuilder;
+
+import java.util.function.Consumer;
 
 /**
  * Interface representing the default response for a {@link ButtonInteractionTarget}.
@@ -10,11 +13,11 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 public interface ButtonResponse {
 
     /**
-     * Retrieve the {@link Message} that should be sent as response.
+     * Retrieve the {@link AbstractMessageBuilder} {@link Consumer} that should set the response content.
      *
-     * @return A {@link Message}
+     * @return A {@link AbstractMessageBuilder} {@link Consumer}
      */
-    Message getMessage();
+    Consumer<AbstractMessageBuilder<?, ?>> getHandler();
 
     /**
      * Check if instead of sending a new message, the original {@link Message} on which the {@link Button} has been
