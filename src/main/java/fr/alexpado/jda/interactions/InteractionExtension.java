@@ -300,16 +300,16 @@ public class InteractionExtension extends ListenerAdapter {
 
         Sentry.configureScope(scope -> this.createScope(scope, event, "button", event.getComponentId()));
 
-        String transation;
+        String transaction;
         try {
             URI uri = URI.create(event.getComponentId());
-            transation = "%s://%s%s".formatted(uri.getScheme(), uri.getHost(), uri.getPath());
+            transaction = "%s://%s%s".formatted(uri.getScheme(), uri.getHost(), uri.getPath());
         } catch (Exception ignore) {
-            transation = "button://%s".formatted(event.getComponentId());
+            transaction = "button://%s".formatted(event.getComponentId());
         }
 
         try {
-            this.run(transation, ButtonInteraction.class, event);
+            this.run(transaction, ButtonInteraction.class, event);
         } catch (Exception e) {
             Sentry.captureException(e);
         }
