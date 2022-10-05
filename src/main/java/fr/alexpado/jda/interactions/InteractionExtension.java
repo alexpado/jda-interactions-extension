@@ -229,16 +229,18 @@ public class InteractionExtension extends ListenerAdapter {
             timedAction.endAction();
 
             try {
-                Object result = null;
                 timedAction.action("preprocessors", "Calling preprocessors");
-                for (InteractionPreprocessor preprocessor : this.preprocessors) {
-                    Optional<Object> optionalObject = preprocessor.preprocess(event);
 
-                    if (optionalObject.isPresent()) {
-                        result = optionalObject.get();
-                        break;
-                    }
+                if (!this.preprocessors.stream().allMatch(preprocessor -> preprocessor.mayContinue(event))) {
+                    return; // Ignore this event
                 }
+
+                Object result = this.preprocessors.stream()
+                                                  .map(preprocessor -> preprocessor.preprocess(event))
+                                                  .filter(Optional::isPresent)
+                                                  .findFirst()
+                                                  .orElse(null);
+
                 timedAction.endAction();
 
                 if (result == null) {
@@ -280,9 +282,7 @@ public class InteractionExtension extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 
-        Sentry.configureScope(scope -> {
-            this.createScope(scope, event, "slash", event.getCommandPath());
-        });
+        Sentry.configureScope(scope -> this.createScope(scope, event, "slash", event.getCommandPath()));
 
         String transaction = "slash://%s".formatted(event.getCommandPath());
 
@@ -298,9 +298,7 @@ public class InteractionExtension extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 
-        Sentry.configureScope(scope -> {
-            this.createScope(scope, event, "button", event.getComponentId());
-        });
+        Sentry.configureScope(scope -> this.createScope(scope, event, "button", event.getComponentId()));
 
         String transation;
         try {
@@ -322,9 +320,7 @@ public class InteractionExtension extends ListenerAdapter {
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
 
-        Sentry.configureScope(scope -> {
-            this.createScope(scope, event, "auto-complete", event.getCommandPath());
-        });
+        Sentry.configureScope(scope -> this.createScope(scope, event, "auto-complete", event.getCommandPath()));
 
         String transaction = "complete://%s".formatted(event.getCommandPath());
         try {
