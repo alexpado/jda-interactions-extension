@@ -105,14 +105,19 @@ public abstract class DefaultInteractionContainer<T extends InteractionTarget<U>
     @Override
     public Object dispatch(DispatchEvent<U> event) throws Exception {
 
+        event.getTimedAction().action("resolve", "Finding the interaction target");
         Optional<T> optionalTarget = this.resolve(event.getPath());
 
         if (optionalTarget.isEmpty()) {
             throw new InteractionNotFoundException(this, event);
         }
+        event.getTimedAction().endAction();
 
-        T target = optionalTarget.get();
-        return target.execute(event, this.getMappedClasses());
+        event.getTimedAction().action("execute", "Running the interaction target");
+        T      target = optionalTarget.get();
+        Object obj    = target.execute(event, this.getMappedClasses());
+        event.getTimedAction().endAction();
+        return obj;
     }
 
     /**

@@ -1,7 +1,7 @@
 package fr.alexpado.jda.interactions.responses;
 
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionTarget;
-import net.dv8tion.jda.api.utils.messages.AbstractMessageBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageRequest;
 
 import java.util.function.Consumer;
 
@@ -11,11 +11,11 @@ import java.util.function.Consumer;
 public interface SlashResponse {
 
     /**
-     * Retrieve the {@link AbstractMessageBuilder} {@link Consumer} that should set the response content.
+     * Retrieve the {@link MessageRequest} {@link Consumer} that should set the response content.
      *
-     * @return A {@link AbstractMessageBuilder} {@link Consumer}
+     * @return A {@link MessageRequest} {@link Consumer}
      */
-    Consumer<AbstractMessageBuilder<?, ?>> getHandler();
+    Consumer<MessageRequest<?>> getHandler();
 
     /**
      * Check if this {@link SlashResponse} is ephemeral (ie: Only shown to the user who interacted).

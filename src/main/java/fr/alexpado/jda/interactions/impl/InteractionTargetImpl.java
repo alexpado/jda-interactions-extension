@@ -72,6 +72,7 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
     public Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<DispatchEvent<T>, ?>> mapping) throws Exception {
 
         if (this.getMeta().isDeferred()) {
+            event.getTimedAction().action("deferring", "Deferring the interaction");
             boolean     reply       = this.getMeta().shouldReply();
             Interaction interaction = event.getInteraction();
 
@@ -82,6 +83,7 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
             } else {
                 throw new UnsupportedOperationException("Couldn't pre-handle deferred request");
             }
+            event.getTimedAction().endAction();
         }
 
         event.getTimedAction().action("injection", "Injecting parameters");

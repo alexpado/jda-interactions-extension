@@ -64,7 +64,6 @@ public class DefaultErrorHandler implements InteractionErrorHandler {
         // If not IReplyCallback, well, that's it.
     }
 
-
     private <T extends Interaction & IReplyCallback> void answer(T interaction, MessageEmbed embed, boolean ephemeral) {
 
         if (interaction.isAcknowledged()) {

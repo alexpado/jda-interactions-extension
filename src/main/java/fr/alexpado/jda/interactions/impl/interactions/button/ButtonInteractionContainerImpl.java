@@ -2,6 +2,7 @@ package fr.alexpado.jda.interactions.impl.interactions.button;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.exceptions.InteractionNotFoundException;
+import fr.alexpado.jda.interactions.ext.sentry.ITimedAction;
 import fr.alexpado.jda.interactions.impl.interactions.DefaultInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponseHandler;
@@ -13,9 +14,11 @@ import fr.alexpado.jda.interactions.responses.ButtonResponse;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
-import net.dv8tion.jda.api.utils.messages.AbstractMessageBuilder;
+import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -23,7 +26,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Class implementing {@link InteractionContainer} handling {@link ButtonInteraction} with target of type
@@ -55,10 +58,10 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
 
         try {
             URI raw = new URI(uri.getScheme(),
-                              uri.getAuthority(),
-                              uri.getPath(),
-                              null, // Ignore the query part of the input url
-                              uri.getFragment());
+                    uri.getAuthority(),
+                    uri.getPath(),
+                    null, // Ignore the query part of the input url
+                    uri.getFragment());
 
             return super.resolve(raw);
         } catch (URISyntaxException e) {
@@ -77,15 +80,18 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
     @Override
     public Object dispatch(DispatchEvent<ButtonInteraction> event) throws Exception {
 
+        event.getTimedAction().action("resolve", "Finding the interaction target");
         Optional<ButtonInteractionTarget> optionalTarget = this.resolve(event.getPath());
 
         if (optionalTarget.isEmpty()) {
             throw new InteractionNotFoundException(this, event);
         }
+        event.getTimedAction().endAction();
 
         ButtonInteractionTarget target = optionalTarget.get();
 
         // Build Options
+        event.getTimedAction().action("convert", "Converting URI to interaction options");
         Map<String, String> query = new HashMap<>();
 
         if (event.getPath().getQuery() != null) {
@@ -137,8 +143,12 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
                         event.getOptions().put(name, null);
             }
         }
+        event.getTimedAction().endAction();
 
-        return target.execute(event, this.getMappedClasses());
+        event.getTimedAction().action("execute", "Running the interaction target");
+        Object obj = target.execute(event, this.getMappedClasses());
+        event.getTimedAction().endAction();
+        return obj;
     }
 
     /**
@@ -186,36 +196,47 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
         if (event.getInteraction() instanceof ButtonInteraction callback && response instanceof ButtonResponse buttonResponse) {
-
-            event.getTimedAction().action("build", "Building the response");
-            Consumer<AbstractMessageBuilder<?, ?>> consumer = buttonResponse.getHandler();
-
-            MessageCreateBuilder cBuilder = new MessageCreateBuilder();
-            MessageEditBuilder   eBuilder = new MessageEditBuilder();
-
             if (callback.isAcknowledged()) {
-                if (buttonResponse.shouldEditOriginalMessage()) {
-                    consumer.accept(eBuilder);
-                    callback.getHook().editOriginal(eBuilder.build()).complete();
-                } else {
-                    consumer.accept(cBuilder);
-                    callback.getHook()
-                            .sendMessage(cBuilder.build())
-                            .setEphemeral(buttonResponse.isEphemeral())
-                            .complete();
-                }
+                this.doResponseHandling(event.getTimedAction(), buttonResponse, callback.getHook()::editOriginal, callback.getHook()::sendMessage);
             } else {
-                if (buttonResponse.shouldEditOriginalMessage()) {
-                    consumer.accept(eBuilder);
-                    callback.editMessage(eBuilder.build()).complete();
-                } else {
-                    consumer.accept(cBuilder);
-                    callback.reply(cBuilder.build()).setEphemeral(buttonResponse.isEphemeral()).complete();
-                }
+                this.doResponseHandling(event.getTimedAction(), buttonResponse, callback::editMessage, callback::reply);
             }
-
-            event.getTimedAction().endAction();
         }
+    }
+
+    private void doResponseHandling(ITimedAction action, ButtonResponse response, Function<MessageEditData, RestAction<?>> editCall, Function<MessageCreateData, RestAction<?>> createCall) {
+
+        if (response.shouldEditOriginalMessage()) {
+            action.action("build", "Building the response");
+            MessageEditBuilder builder = this.getMessageEditBuilder(response);
+            action.endAction();
+
+            action.action("reply", "Replying to the interaction (EDIT)");
+            editCall.apply(builder.build()).complete();
+            action.endAction();
+        } else {
+            action.action("build", "Building the response");
+            MessageCreateBuilder builder = this.getMessageCreateBuilder(response);
+            action.endAction();
+
+            action.action("reply", "Replying to the interaction (CREATE)");
+            createCall.apply(builder.build()).complete();
+            action.endAction();
+        }
+    }
+
+    private MessageEditBuilder getMessageEditBuilder(ButtonResponse response) {
+
+        MessageEditBuilder builder = new MessageEditBuilder();
+        response.getHandler().accept(builder);
+        return builder;
+    }
+
+    private MessageCreateBuilder getMessageCreateBuilder(ButtonResponse response) {
+
+        MessageCreateBuilder builder = new MessageCreateBuilder();
+        response.getHandler().accept(builder);
+        return builder;
     }
 
 }

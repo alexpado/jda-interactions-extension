@@ -87,6 +87,5 @@ public class AutocompleteInteractionContainerImpl extends DefaultInteractionCont
             interaction.replyChoices(choices).complete();
             event.getTimedAction().endAction();
         }
-
     }
 }

@@ -17,7 +17,6 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
-import net.dv8tion.jda.api.utils.messages.AbstractMessageBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +25,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * Class implementing {@link InteractionContainer} handling {@link SlashCommandInteraction} with target of type
@@ -143,22 +141,38 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
         if (event.getInteraction() instanceof IReplyCallback callback && response instanceof SlashResponse slashResponse) {
-            event.getTimedAction().action("build", "Building the response");
-            Consumer<AbstractMessageBuilder<?, ?>> consumer = slashResponse.getHandler();
-
-            MessageCreateBuilder cBuilder = new MessageCreateBuilder();
-            MessageEditBuilder   eBuilder = new MessageEditBuilder();
-
-            event.getTimedAction().action("replying", "Sending the reply");
             if (callback.isAcknowledged()) {
-                callback.getHook().editOriginal(eBuilder.build()).complete();
-                consumer.accept(eBuilder);
+                event.getTimedAction().action("build", "Building the response");
+                MessageEditBuilder builder = this.getMessageEditBuilder(slashResponse);
+                event.getTimedAction().endAction();
+
+                event.getTimedAction().action("reply", "Replying to the interaction (EDIT)");
+                callback.getHook().editOriginal(builder.build()).complete();
+                event.getTimedAction().endAction();
             } else {
-                consumer.accept(cBuilder);
-                callback.reply(cBuilder.build()).setEphemeral(slashResponse.isEphemeral()).complete();
+                event.getTimedAction().action("build", "Building the response");
+                MessageCreateBuilder builder = this.getMessageCreateBuilder(slashResponse);
+                event.getTimedAction().endAction();
+
+                event.getTimedAction().action("reply", "Replying to the interaction (CREATE)");
+                callback.reply(builder.build()).complete();
+                event.getTimedAction().endAction();
             }
-            event.getTimedAction().endAction();
         }
+    }
+
+    private MessageEditBuilder getMessageEditBuilder(SlashResponse response) {
+
+        MessageEditBuilder builder = new MessageEditBuilder();
+        response.getHandler().accept(builder);
+        return builder;
+    }
+
+    private MessageCreateBuilder getMessageCreateBuilder(SlashResponse response) {
+
+        MessageCreateBuilder builder = new MessageCreateBuilder();
+        response.getHandler().accept(builder);
+        return builder;
     }
 
     /**
