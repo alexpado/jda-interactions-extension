@@ -14,11 +14,8 @@ import fr.alexpado.jda.interactions.responses.ButtonResponse;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
-import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -26,7 +23,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 /**
  * Class implementing {@link InteractionContainer} handling {@link ButtonInteraction} with target of type
@@ -197,14 +194,25 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
 
         if (event.getInteraction() instanceof ButtonInteraction callback && response instanceof ButtonResponse buttonResponse) {
             if (callback.isAcknowledged()) {
-                this.doResponseHandling(event.getTimedAction(), buttonResponse, callback.getHook()::editOriginal, callback.getHook()::sendMessage);
+                this.doResponseHandling(event.getTimedAction(), buttonResponse, (builder) -> {
+                    callback.getHook().editOriginal(builder.build()).complete();
+                }, (builder) -> {
+                    callback.getHook()
+                            .sendMessage(builder.build())
+                            .setEphemeral(buttonResponse.isEphemeral())
+                            .complete();
+                });
             } else {
-                this.doResponseHandling(event.getTimedAction(), buttonResponse, callback::editMessage, callback::reply);
+                this.doResponseHandling(event.getTimedAction(), buttonResponse, (builder) -> {
+                    callback.editMessage(builder.build()).complete();
+                }, (builder) -> {
+                    callback.reply(builder.build()).setEphemeral(buttonResponse.isEphemeral()).complete();
+                });
             }
         }
     }
 
-    private void doResponseHandling(ITimedAction action, ButtonResponse response, Function<MessageEditData, RestAction<?>> editCall, Function<MessageCreateData, RestAction<?>> createCall) {
+    private void doResponseHandling(ITimedAction action, ButtonResponse response, Consumer<MessageEditBuilder> editCall, Consumer<MessageCreateBuilder> createCall) {
 
         if (response.shouldEditOriginalMessage()) {
             action.action("build", "Building the response");
@@ -212,7 +220,7 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
             action.endAction();
 
             action.action("reply", "Replying to the interaction (EDIT)");
-            editCall.apply(builder.build()).complete();
+            editCall.accept(builder);
             action.endAction();
         } else {
             action.action("build", "Building the response");
@@ -220,7 +228,7 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
             action.endAction();
 
             action.action("reply", "Replying to the interaction (CREATE)");
-            createCall.apply(builder.build()).complete();
+            createCall.accept(builder);
             action.endAction();
         }
     }

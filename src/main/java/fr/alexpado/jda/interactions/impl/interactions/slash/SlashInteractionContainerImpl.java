@@ -155,7 +155,7 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
                 event.getTimedAction().endAction();
 
                 event.getTimedAction().action("reply", "Replying to the interaction (CREATE)");
-                callback.reply(builder.build()).complete();
+                callback.reply(builder.build()).setEphemeral(slashResponse.isEphemeral()).complete();
                 event.getTimedAction().endAction();
             }
         }
