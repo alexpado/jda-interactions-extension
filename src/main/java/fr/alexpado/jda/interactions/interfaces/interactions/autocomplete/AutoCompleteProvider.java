@@ -18,11 +18,13 @@ public interface AutoCompleteProvider {
      *         The {@link DispatchEvent} context in which the completion is required.
      * @param name
      *         The name of the option that need to be auto-completed.
+     * @param completionName
+     *         The completion name used when auto-completed.
      * @param value
      *         The value of the option that need to be auto-completed.
      *
      * @return A {@link List} of {@link Command.Choice}.
      */
-    List<Command.Choice> complete(DispatchEvent<CommandAutoCompleteInteraction> event, String name, String value);
+    List<Command.Choice> complete(DispatchEvent<CommandAutoCompleteInteraction> event, String name, String completionName, String value);
 
 }

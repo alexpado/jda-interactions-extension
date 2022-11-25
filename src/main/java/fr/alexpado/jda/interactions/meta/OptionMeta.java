@@ -17,6 +17,7 @@ import java.util.List;
 public class OptionMeta {
 
     private final String           name;
+    private final String           autoCompleteName;
     private final String           description;
     private final List<ChoiceMeta> choices;
     private final boolean          required;
@@ -41,7 +42,30 @@ public class OptionMeta {
      */
     public OptionMeta(String name, String description, boolean required, boolean autoCompletable, OptionType type) {
 
-        this(name, description, required, autoCompletable, type, Collections.emptyList());
+        this(name, name, description, required, autoCompletable, type, Collections.emptyList());
+    }
+
+    /**
+     * Create a new {@link OptionMeta}.
+     *
+     * @param name
+     *         The option name
+     * @param autoCompleteName
+     *         The option auto-complete name
+     * @param description
+     *         The option description
+     * @param required
+     *         Define if the option is required. For {@link SlashCommandInteraction}, it will prevent the user to issue
+     *         the command if not all required options are set. For {@link ButtonInteraction}, it will prevent the
+     *         execution of the associated {@link InteractionTarget} with an exception.
+     * @param autoCompletable
+     *         Define if the option is auto-completable.
+     * @param type
+     *         The option type.
+     */
+    public OptionMeta(String name, String autoCompleteName, String description, boolean required, boolean autoCompletable, OptionType type) {
+
+        this(name, autoCompleteName, description, required, autoCompletable, type, Collections.emptyList());
     }
 
     /**
@@ -64,13 +88,40 @@ public class OptionMeta {
      */
     public OptionMeta(String name, String description, boolean required, boolean autoCompletable, OptionType type, List<ChoiceMeta> choices) {
 
-        this.name            = name;
-        this.description     = description;
-        this.choices         = choices;
-        this.required        = required;
-        this.autoCompletable = autoCompletable;
-        this.type            = type;
+        this(name, name, description, required, autoCompletable, type, choices);
     }
+
+    /**
+     * Create a new {@link OptionMeta}.
+     *
+     * @param name
+     *         The option name
+     * @param autoCompleteName
+     *         The option auto-complete name
+     * @param description
+     *         The option description
+     * @param required
+     *         Define if the option is required. For {@link SlashCommandInteraction}, it will prevent the user to issue
+     *         the command if not all required options are set. For {@link ButtonInteraction}, it will prevent the
+     *         execution of the associated {@link InteractionTarget} with an exception.
+     * @param autoCompletable
+     *         Define if the option is auto-completable.
+     * @param type
+     *         The option type.
+     * @param choices
+     *         The option {@link ChoiceMeta} list.
+     */
+    public OptionMeta(String name, String autoCompleteName, String description, boolean required, boolean autoCompletable, OptionType type, List<ChoiceMeta> choices) {
+
+        this.name             = name;
+        this.autoCompleteName = autoCompleteName.isEmpty() ? name : autoCompleteName;
+        this.description      = description;
+        this.choices          = choices;
+        this.required         = required;
+        this.autoCompletable  = autoCompletable;
+        this.type             = type;
+    }
+
 
     /**
      * Create a new {@link OptionMeta}.
@@ -80,12 +131,13 @@ public class OptionMeta {
      */
     public OptionMeta(Option option) {
 
-        this.name            = option.name();
-        this.description     = option.description();
-        this.choices         = Arrays.stream(option.choices()).map(ChoiceMeta::new).toList();
-        this.required        = option.required();
-        this.autoCompletable = option.autoComplete();
-        this.type            = option.type();
+        this.name             = option.name();
+        this.autoCompleteName = option.autoCompleteName().isEmpty() ? option.name() : option.autoCompleteName();
+        this.description      = option.description();
+        this.choices          = Arrays.stream(option.choices()).map(ChoiceMeta::new).toList();
+        this.required         = option.required();
+        this.autoCompletable  = option.autoComplete();
+        this.type             = option.type();
     }
 
     /**
@@ -96,6 +148,16 @@ public class OptionMeta {
     public String getName() {
 
         return this.name;
+    }
+
+    /**
+     * Retrieve this {@link OptionMeta} auto-complete name.
+     *
+     * @return The auto-complete name.
+     */
+    public String getAutoCompleteName() {
+
+        return this.autoCompleteName;
     }
 
     /**

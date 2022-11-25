@@ -16,9 +16,10 @@ import net.dv8tion.jda.api.interactions.AutoCompleteQuery;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -63,17 +64,26 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
         String name  = focused.getName();
         String value = focused.getValue();
 
-        if (this.completionProviders.containsKey(name)) {
-            return () -> this.completionProviders.get(name).complete(event, name, value);
+        Optional<OptionMeta> optionalOptionMeta = this.meta.getOptions().stream()
+                                                           .filter(option -> option.getName().equals(name))
+                                                           .findFirst();
+
+        String completionName = optionalOptionMeta.map(OptionMeta::getAutoCompleteName).orElse(name);
+
+        if (this.completionProviders.containsKey(completionName)) {
+            return () -> this.completionProviders.get(completionName).complete(event, name, completionName, value);
         }
 
-        return () -> this.meta.getOptions().stream()
-                              .filter(option -> option.getName().equals(name))
-                              .map(OptionMeta::getChoices)
-                              .flatMap(List::stream)
-                              .filter(choice -> choice.contains(value))
-                              .map(ChoiceMeta::asChoice)
-                              .toList();
+        if (optionalOptionMeta.isEmpty()) {
+            return Collections::emptyList;
+        }
+
+        return () -> optionalOptionMeta.get()
+                                       .getChoices()
+                                       .stream()
+                                       .filter(choice -> choice.contains(value))
+                                       .map(ChoiceMeta::asChoice)
+                                       .toList();
     }
 
     /**

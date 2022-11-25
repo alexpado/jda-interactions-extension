@@ -29,6 +29,14 @@ public @interface Option {
     String name();
 
     /**
+     * The name to use for the auto-completion. This allows to give multiple name but use the same auto-complete
+     * feature. When empty, the original option's name should be used instead.
+     *
+     * @return The option's auto-complete name.
+     */
+    String autoCompleteName() default "";
+
+    /**
      * The description of the option. In a Slash context, this will be shown as a command parameter description.
      *
      * @return The option's description.
