@@ -86,7 +86,7 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
     @Override
     public URI getEventUri(SlashCommandInteraction event) {
 
-        return this.createURI(event.getCommandPath());
+        return this.createURI(event.getFullCommandName().replace(" ", "/"));
     }
 
     /**

@@ -282,9 +282,10 @@ public class InteractionExtension extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 
-        Sentry.configureScope(scope -> this.createScope(scope, event, "slash", event.getCommandPath()));
+        Sentry.configureScope(scope -> this.createScope(scope, event, "slash", event.getFullCommandName()
+                                                                                    .replace(" ", "/")));
 
-        String transaction = "slash://%s".formatted(event.getCommandPath());
+        String transaction = "slash://%s".formatted(event.getFullCommandName().replace(" ", "/"));
 
         try {
             this.run(transaction, SlashCommandInteraction.class, event);
@@ -320,9 +321,10 @@ public class InteractionExtension extends ListenerAdapter {
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
 
-        Sentry.configureScope(scope -> this.createScope(scope, event, "auto-complete", event.getCommandPath()));
+        Sentry.configureScope(scope -> this.createScope(scope, event, "auto-complete", event.getFullCommandName()
+                                                                                            .replace(" ", "/")));
 
-        String transaction = "complete://%s".formatted(event.getCommandPath());
+        String transaction = "complete://%s".formatted(event.getFullCommandName().replace(" ", "/"));
         try {
             this.run(transaction, CommandAutoCompleteInteraction.class, event);
         } catch (Exception e) {

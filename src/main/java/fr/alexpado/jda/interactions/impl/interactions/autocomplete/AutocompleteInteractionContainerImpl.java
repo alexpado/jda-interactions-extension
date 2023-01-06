@@ -45,7 +45,7 @@ public class AutocompleteInteractionContainerImpl extends DefaultInteractionCont
     @Override
     public URI getEventUri(CommandAutoCompleteInteraction event) {
 
-        return this.createURI(event.getCommandPath());
+        return this.createURI(event.getFullCommandName().replace(" ", "/"));
     }
 
     /**
