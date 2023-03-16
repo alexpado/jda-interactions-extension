@@ -239,6 +239,7 @@ public class InteractionExtension extends ListenerAdapter {
                                                   .map(preprocessor -> preprocessor.preprocess(event))
                                                   .filter(Optional::isPresent)
                                                   .findFirst()
+                                                  .orElse(Optional.empty())
                                                   .orElse(null);
 
                 timedAction.endAction();
