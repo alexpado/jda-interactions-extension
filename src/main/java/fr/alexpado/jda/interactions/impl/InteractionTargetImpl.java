@@ -4,10 +4,10 @@ import fr.alexpado.jda.interactions.annotations.Param;
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.exceptions.InteractionDeclarationException;
 import fr.alexpado.jda.interactions.exceptions.InteractionInjectionException;
-import fr.alexpado.jda.interactions.interfaces.interactions.Injection;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponseHandler;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionTarget;
 import fr.alexpado.jda.interactions.interfaces.interactions.MetaContainer;
+import fr.alexpado.jda.interactions.interfaces.interactions.Injection;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback;
@@ -21,6 +21,7 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Class implementing the default behavior of an {@link InteractionTarget}.
@@ -98,19 +99,53 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
 
             LOGGER.debug("Parameter {} is type {} (Option: {}, Injection: {})", name, type, isOption, isInjection);
 
+            Object parameterInput = null;
+
             if (isOption) {
-                Param param = parameter.getAnnotation(Param.class);
-                callParameters.add(event.getOptions().get(param.value()));
+                Param  param = parameter.getAnnotation(Param.class);
+                Object obj   = event.getOptions().get(param.value());
+
+                if (isInjection) { // Special case where the injection is used as converter
+                    Injection<DispatchEvent<T>, ?> injection = mapping.get(parameter.getType());
+                    Supplier<?>                    injecter  = injection.inject(event, param.value());
+
+                    try {
+                        parameterInput = injecter.get();
+                    } catch (Exception e) {
+                        throw new InteractionInjectionException(e, this.instance.getClass(), this.method, parameter);
+                    }
+                } else {
+                    parameterInput = obj;
+                }
             } else if (isInjection) {
                 Injection<DispatchEvent<T>, ?> injection = mapping.get(parameter.getType());
+                Supplier<?>                    injecter  = injection.inject(event, null);
+
                 try {
-                    callParameters.add(injection.inject(event).get());
+                    parameterInput = injecter.get();
                 } catch (Exception e) {
                     throw new InteractionInjectionException(e, this.instance.getClass(), this.method, parameter);
                 }
             } else {
-                throw new InteractionDeclarationException(this.instance.getClass(), this.method, this.meta.getName(), "Unmapped parameter " + type);
+                throw new InteractionDeclarationException(
+                        this.instance.getClass(),
+                        this.method,
+                        this.meta.getName(),
+                        "Unmapped parameter " + type
+                );
             }
+
+            if (parameter.getType().isInstance(parameterInput)) {
+                callParameters.add(parameterInput);
+            } else {
+                throw new InteractionInjectionException(
+                        this.instance.getClass(),
+                        this.method,
+                        parameter,
+                        parameterInput
+                );
+            }
+
             event.getTimedAction().endAction();
         }
         event.getTimedAction().endAction();

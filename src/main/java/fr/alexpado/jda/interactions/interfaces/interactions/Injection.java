@@ -17,9 +17,12 @@ public interface Injection<T, U> {
      *
      * @param event
      *         The event {@link T} from which information about the context can be used.
+     * @param option
+     *         The option currently being parsed as the request comes in, {@code null} if the parameter is a simple
+     *         injection.
      *
      * @return A supplier to lazy-load a value of type {@link U}.
      */
-    Supplier<U> inject(T event);
+    Supplier<U> inject(T event, String option);
 
 }

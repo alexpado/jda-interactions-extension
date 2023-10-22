@@ -15,6 +15,7 @@ public class InteractionInjectionException extends Exception implements DiscordE
     private final Class<?>  source;
     private final Method    method;
     private final Parameter parameter;
+    private final String    simpleMessage;
 
     /**
      * Create a new {@link InteractionInjectionException}.
@@ -31,16 +32,52 @@ public class InteractionInjectionException extends Exception implements DiscordE
     public InteractionInjectionException(Exception cause, Class<?> source, Method method, Parameter parameter) {
 
         super(
-                String.format("Failed to inject dependency %s on %s@%s: %s",
+                String.format(
+                        "Failed to inject dependency %s on %s@%s: %s",
                         parameter.getType().getTypeName(),
                         method.getName(),
                         parameter.getName(),
                         cause.getMessage()
                 ), cause);
 
-        this.source    = source;
-        this.method    = method;
-        this.parameter = parameter;
+        this.source        = source;
+        this.method        = method;
+        this.parameter     = parameter;
+        this.simpleMessage = cause.getMessage();
+    }
+
+    /**
+     * Create a new {@link InteractionInjectionException}.
+     *
+     * @param source
+     *         The {@link Class} that was used during the execution.
+     * @param method
+     *         The {@link Method} that was used during the execution.
+     * @param parameter
+     *         The {@link Parameter} for which the injection failed.
+     * @param actual
+     *         The object that got received either by the injecter or the option map.
+     */
+    public InteractionInjectionException(Class<?> source, Method method, Parameter parameter, Object actual) {
+
+        super(
+                String.format(
+                        "Failed to inject dependency %s on %s@%s: Expected %s type, but got %s.",
+                        parameter.getType().getTypeName(),
+                        method.getName(),
+                        parameter.getName(),
+                        parameter.getType().getSimpleName(),
+                        actual == null ? "`null`" : actual.getClass().getSimpleName()
+                ));
+
+        this.source        = source;
+        this.method        = method;
+        this.parameter     = parameter;
+        this.simpleMessage = String.format(
+                "Expected %s type, but got %s.",
+                parameter.getType().getSimpleName(),
+                actual == null ? "`null`" : actual.getClass().getSimpleName()
+        );
     }
 
     /**
@@ -82,7 +119,8 @@ public class InteractionInjectionException extends Exception implements DiscordE
     public EmbedBuilder asEmbed() {
 
         EmbedBuilder builder = new EmbedBuilder();
-        builder.setDescription("Failed to inject dependency");
+        builder.setTitle("Failed to inject dependency");
+        builder.setDescription(this.simpleMessage);
 
         builder.addField("Class", this.source.getSimpleName(), false);
         builder.addField("Method", this.method.getName(), false);

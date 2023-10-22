@@ -84,17 +84,17 @@ public class InteractionExtension extends ListenerAdapter {
     public void useDefaultMapping() {
 
         for (InteractionContainer<?, ?> container : this.containers.values()) {
-            container.addClassMapping(User.class, event -> event.getInteraction()::getUser);
-            container.addClassMapping(Channel.class, event -> event.getInteraction()::getChannel);
-            container.addClassMapping(GuildChannel.class, event -> event.getInteraction()::getGuildChannel);
-            container.addClassMapping(Guild.class, event -> event.getInteraction()::getGuild);
-            container.addClassMapping(ChannelType.class, event -> event.getInteraction()::getChannelType);
-            container.addClassMapping(InteractionType.class, event -> event.getInteraction()::getType);
-            container.addClassMapping(Member.class, event -> event.getInteraction()::getMember);
-            container.addClassMapping(MessageChannel.class, event -> event.getInteraction()::getMessageChannel);
-            container.addClassMapping(JDA.class, event -> event.getInteraction()::getJDA);
-            container.addClassMapping(Interaction.class, event -> event::getInteraction);
-            container.addClassMapping(ITimedAction.class, event -> event::getTimedAction);
+            container.addClassMapping(User.class, (event, opt) -> event.getInteraction()::getUser);
+            container.addClassMapping(Channel.class, (event, opt) -> event.getInteraction()::getChannel);
+            container.addClassMapping(GuildChannel.class, (event, opt) -> event.getInteraction()::getGuildChannel);
+            container.addClassMapping(Guild.class, (event, opt) -> event.getInteraction()::getGuild);
+            container.addClassMapping(ChannelType.class, (event, opt) -> event.getInteraction()::getChannelType);
+            container.addClassMapping(InteractionType.class, (event, opt) -> event.getInteraction()::getType);
+            container.addClassMapping(Member.class, (event, opt) -> event.getInteraction()::getMember);
+            container.addClassMapping(MessageChannel.class, (event, opt) -> event.getInteraction()::getMessageChannel);
+            container.addClassMapping(JDA.class, (event, opt) -> event.getInteraction()::getJDA);
+            container.addClassMapping(Interaction.class, (event, opt) -> event::getInteraction);
+            container.addClassMapping(ITimedAction.class, (event, opt) -> event::getTimedAction);
         }
     }
 
@@ -208,7 +208,6 @@ public class InteractionExtension extends ListenerAdapter {
      *         The type of the container
      */
     // Suppressing warning for unchecked cast as it is type-safe due to the nature of the register methods signature.
-    @SuppressWarnings("unchecked")
     public <T extends Interaction, V extends InteractionTarget<T>, K extends InteractionContainer<V, T>> void run(String transactionName, Class<T> type, T discordEvent) {
 
         try (ITimedAction timedAction = ITimedAction.create()) {
