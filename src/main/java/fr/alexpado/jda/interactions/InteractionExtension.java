@@ -346,7 +346,7 @@ public class InteractionExtension extends ListenerAdapter {
         io.sentry.protocol.User sentryUser = new io.sentry.protocol.User();
         sentryUser.setId(user.getId());
         sentryUser.setEmail("%s@discordapp.com".formatted(user.getId()));
-        sentryUser.setUsername(user.getAsTag());
+        sentryUser.setUsername(user.getName());
         scope.setUser(sentryUser);
 
         scope.setTag("category", "interaction");
@@ -355,7 +355,7 @@ public class InteractionExtension extends ListenerAdapter {
         scope.setTag("description", description);
 
         scope.setTag("user", user.getId());
-        extra.put("user", user.getAsTag());
+        extra.put("user", user.getName());
 
         if (channel != null) {
             scope.setTag("channel", channel.getId());
