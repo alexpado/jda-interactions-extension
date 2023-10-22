@@ -3,6 +3,7 @@ package fr.alexpado.jda.interactions.impl.handlers;
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponseHandler;
 import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.callbacks.IAutoCompleteCallback;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
@@ -51,14 +52,12 @@ public class SinkResponseHandler implements InteractionResponseHandler {
     @Override
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
-        if (event.getInteraction() instanceof SlashCommandInteraction slash) {
-            this.answer(slash, (data) -> data.setContent("*Nothing to display*"));
-        } else if (event.getInteraction() instanceof ButtonInteraction button) {
-            if (!button.isAcknowledged()) {
-                button.deferReply().complete();
-            }
-        } else if (event.getInteraction() instanceof CommandAutoCompleteInteraction auto) {
-            auto.replyChoices().complete();
+        switch (event.getInteraction()) {
+            case SlashCommandInteraction slash -> this.answer(slash, data -> data.setContent("*Nothing to display*"));
+            case ButtonInteraction button -> this.acknowledgeButton(button);
+            case CommandAutoCompleteInteraction auto -> this.acknowledgeAutocomplete(auto);
+            default -> {
+            } // Unsupported (yet?)
         }
     }
 
@@ -72,6 +71,20 @@ public class SinkResponseHandler implements InteractionResponseHandler {
             MessageCreateBuilder builder = new MessageCreateBuilder();
             consumer.accept(builder);
             interaction.reply(builder.build()).setEphemeral(true).complete();
+        }
+    }
+
+    private void acknowledgeButton(IReplyCallback button) {
+
+        if (!button.isAcknowledged()) {
+            button.deferReply().complete();
+        }
+    }
+
+    private void acknowledgeAutocomplete(IAutoCompleteCallback auto) {
+
+        if (!auto.isAcknowledged()) {
+            auto.replyChoices().complete();
         }
     }
 
