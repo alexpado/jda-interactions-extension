@@ -55,6 +55,35 @@ public class InteractionInjectionException extends Exception implements DiscordE
      *         The {@link Method} that was used during the execution.
      * @param parameter
      *         The {@link Parameter} for which the injection failed.
+     * @param reason
+     *         An error message
+     */
+    public InteractionInjectionException(Class<?> source, Method method, Parameter parameter, String reason) {
+
+        super(
+                String.format(
+                        "Failed to inject dependency %s on %s@%s: %s",
+                        parameter.getType().getTypeName(),
+                        method.getName(),
+                        parameter.getName(),
+                        reason
+                ));
+
+        this.source        = source;
+        this.method        = method;
+        this.parameter     = parameter;
+        this.simpleMessage = reason;
+    }
+
+    /**
+     * Create a new {@link InteractionInjectionException}.
+     *
+     * @param source
+     *         The {@link Class} that was used during the execution.
+     * @param method
+     *         The {@link Method} that was used during the execution.
+     * @param parameter
+     *         The {@link Parameter} for which the injection failed.
      * @param actual
      *         The object that got received either by the injecter or the option map.
      */

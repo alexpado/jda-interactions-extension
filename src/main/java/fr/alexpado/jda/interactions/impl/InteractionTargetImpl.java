@@ -4,14 +4,15 @@ import fr.alexpado.jda.interactions.annotations.Param;
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
 import fr.alexpado.jda.interactions.exceptions.InteractionDeclarationException;
 import fr.alexpado.jda.interactions.exceptions.InteractionInjectionException;
+import fr.alexpado.jda.interactions.interfaces.interactions.Injection;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionResponseHandler;
 import fr.alexpado.jda.interactions.interfaces.interactions.InteractionTarget;
 import fr.alexpado.jda.interactions.interfaces.interactions.MetaContainer;
-import fr.alexpado.jda.interactions.interfaces.interactions.Injection;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -30,6 +32,12 @@ import java.util.function.Supplier;
  *         The type of the interaction
  */
 public class InteractionTargetImpl<T extends Interaction> implements InteractionTarget<T>, MetaContainer {
+
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_MAP = new HashMap<>() {{
+        this.put(long.class, Long.class);
+        this.put(boolean.class, Boolean.class);
+        this.put(double.class, Double.class);
+    }};
 
     private final static Logger LOGGER = LoggerFactory.getLogger(InteractionTargetImpl.class);
 
@@ -99,7 +107,8 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
 
             LOGGER.debug("Parameter {} is type {} (Option: {}, Injection: {})", name, type, isOption, isInjection);
 
-            Object parameterInput = null;
+            @Nullable
+            Object parameterInput;
 
             if (isOption) {
                 Param  param = parameter.getAnnotation(Param.class);
@@ -135,9 +144,35 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
                 );
             }
 
-            if (parameter.getType().isInstance(parameterInput)) {
-                callParameters.add(parameterInput);
-            } else {
+            // Sanity checks, please bear with me :(
+            if (parameter.getType().isPrimitive()) {
+                if (parameterInput == null) {
+                    throw new InteractionInjectionException(
+                            this.instance.getClass(),
+                            this.method,
+                            parameter,
+                            "Unable to assign null-value to a primitive typed parameter."
+                    );
+                }
+
+                if (!PRIMITIVE_MAP.containsKey(parameter.getType())) {
+                    throw new InteractionInjectionException(
+                            this.instance.getClass(),
+                            this.method,
+                            parameter,
+                            "Parameter is an unsupported primitive type (supported: long, boolean, double)."
+                    );
+                }
+
+                if (!PRIMITIVE_MAP.get(parameter.getType()).isAssignableFrom(parameterInput.getClass())) {
+                    throw new InteractionInjectionException(
+                            this.instance.getClass(),
+                            this.method,
+                            parameter,
+                            parameterInput
+                    );
+                }
+            } else if (parameterInput != null && !parameter.getType().isAssignableFrom(parameterInput.getClass())) {
                 throw new InteractionInjectionException(
                         this.instance.getClass(),
                         this.method,
@@ -146,6 +181,8 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
                 );
             }
 
+            // Okay, we're done.
+            callParameters.add(parameterInput);
             event.getTimedAction().endAction();
         }
         event.getTimedAction().endAction();
