@@ -114,7 +114,7 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
                 Param  param = parameter.getAnnotation(Param.class);
                 Object obj   = event.getOptions().get(param.value());
 
-                if (isInjection) { // Special case where the injection is used as converter
+                if (!this.canMap(parameter, obj) && isInjection) { // Special case where the injection is used as converter
                     Injection<DispatchEvent<T>, ?> injection = mapping.get(parameter.getType());
                     Supplier<?>                    injecter  = injection.inject(event, param.value());
 
@@ -144,44 +144,7 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
                 );
             }
 
-            // Sanity checks, please bear with me :(
-            if (parameter.getType().isPrimitive()) {
-                if (parameterInput == null) {
-                    throw new InteractionInjectionException(
-                            this.instance.getClass(),
-                            this.method,
-                            parameter,
-                            "Unable to assign null-value to a primitive typed parameter."
-                    );
-                }
-
-                if (!PRIMITIVE_MAP.containsKey(parameter.getType())) {
-                    throw new InteractionInjectionException(
-                            this.instance.getClass(),
-                            this.method,
-                            parameter,
-                            "Parameter is an unsupported primitive type (supported: long, boolean, double)."
-                    );
-                }
-
-                if (!PRIMITIVE_MAP.get(parameter.getType()).isAssignableFrom(parameterInput.getClass())) {
-                    throw new InteractionInjectionException(
-                            this.instance.getClass(),
-                            this.method,
-                            parameter,
-                            parameterInput
-                    );
-                }
-            } else if (parameterInput != null && !parameter.getType().isAssignableFrom(parameterInput.getClass())) {
-                throw new InteractionInjectionException(
-                        this.instance.getClass(),
-                        this.method,
-                        parameter,
-                        parameterInput
-                );
-            }
-
-            // Okay, we're done.
+            this.checkMapping(parameter, parameterInput);
             callParameters.add(parameterInput);
             event.getTimedAction().endAction();
         }
@@ -211,4 +174,53 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
         return this.meta;
     }
 
+
+    private boolean canMap(Parameter parameter, Object parameterInput) {
+
+        try {
+            this.checkMapping(parameter, parameterInput);
+            return true;
+        } catch (InteractionInjectionException e) {
+            return false;
+        }
+    }
+
+    private void checkMapping(Parameter parameter, Object parameterInput) throws InteractionInjectionException {
+        // Sanity checks, please bear with me :(
+        if (parameter.getType().isPrimitive()) {
+            if (parameterInput == null) {
+                throw new InteractionInjectionException(
+                        this.instance.getClass(),
+                        this.method,
+                        parameter,
+                        "Unable to assign null-value to a primitive typed parameter."
+                );
+            }
+
+            if (!PRIMITIVE_MAP.containsKey(parameter.getType())) {
+                throw new InteractionInjectionException(
+                        this.instance.getClass(),
+                        this.method,
+                        parameter,
+                        "Parameter is an unsupported primitive type (supported: long, boolean, double)."
+                );
+            }
+
+            if (!PRIMITIVE_MAP.get(parameter.getType()).isAssignableFrom(parameterInput.getClass())) {
+                throw new InteractionInjectionException(
+                        this.instance.getClass(),
+                        this.method,
+                        parameter,
+                        parameterInput
+                );
+            }
+        } else if (parameterInput != null && !parameter.getType().isAssignableFrom(parameterInput.getClass())) {
+            throw new InteractionInjectionException(
+                    this.instance.getClass(),
+                    this.method,
+                    parameter,
+                    parameterInput
+            );
+        }
+    }
 }
