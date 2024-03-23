@@ -11,6 +11,7 @@ import fr.alexpado.jda.interactions.interfaces.interactions.autocomplete.Autocom
 import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInteractionContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionContainer;
 import fr.alexpado.jda.interactions.tools.InteractionUtils;
+import io.sentry.IScope;
 import io.sentry.Scope;
 import io.sentry.Sentry;
 import net.dv8tion.jda.api.JDA;
@@ -335,7 +336,7 @@ public class InteractionExtension extends ListenerAdapter {
     }
     // </editor-fold>
 
-    private void createScope(Scope scope, Interaction interaction, String type, String description) {
+    private void createScope(IScope scope, Interaction interaction, String type, String description) {
 
         Map<String, String> extra   = new HashMap<>();
         User                user    = interaction.getUser();

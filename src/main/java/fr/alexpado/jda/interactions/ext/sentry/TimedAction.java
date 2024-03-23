@@ -3,6 +3,7 @@ package fr.alexpado.jda.interactions.ext.sentry;
 import io.sentry.ISpan;
 import io.sentry.ITransaction;
 import io.sentry.Sentry;
+import io.sentry.TransactionOptions;
 
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -33,7 +34,9 @@ public class TimedAction implements ITimedAction {
     @Override
     public void open(String transaction, String name, String description) {
 
-        this.transaction = Sentry.startTransaction(transaction, name, true);
+        TransactionOptions options = new TransactionOptions();
+        options.setBindToScope(true);
+        this.transaction = Sentry.startTransaction(transaction, name, options);
         this.transaction.setDescription(description);
     }
 
