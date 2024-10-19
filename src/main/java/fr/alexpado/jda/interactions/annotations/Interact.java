@@ -1,9 +1,9 @@
 package fr.alexpado.jda.interactions.annotations;
 
-import fr.alexpado.jda.interactions.enums.InteractionType;
 import fr.alexpado.jda.interactions.enums.SlashTarget;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -31,13 +31,6 @@ public @interface Interact {
      * @return The interaction's description.
      */
     String description();
-
-    /**
-     * The type to which this interaction is a target.
-     *
-     * @return The interaction's type.
-     */
-    InteractionType type() default InteractionType.NONE;
 
     /**
      * The context in which this interaction can be used.
@@ -75,5 +68,13 @@ public @interface Interact {
      * @return True if it should be deferred, false otherwise.
      */
     boolean defer() default false;
+
+    /**
+     * Define if the result should be displayed by editing the original message. This will work only if the interaction
+     * is a {@link ButtonInteraction}.
+     *
+     * @return True if it should reply instead of editing, false otherwise.
+     */
+    boolean shouldReply() default true;
 
 }

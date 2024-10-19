@@ -1,41 +1,35 @@
 package fr.alexpado.jda.interactions.interfaces.interactions;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
-import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
-import fr.alexpado.jda.interactions.interfaces.bridge.JdaInteraction;
 import net.dv8tion.jda.api.interactions.Interaction;
 
+/**
+ * Interface representing an error handler for all {@link InteractionContainer}.
+ */
 public interface InteractionErrorHandler {
 
     /**
-     * Called when an exception occurs during the execution of an {@link ExecutableItem}.
+     * Called when an exception occurs during the execution of an {@link Interaction}.
      *
      * @param event
-     *         The {@link DispatchEvent} used when the error occurred.
-     * @param item
-     *         The {@link ExecutableItem} generating the error.
+     *         The {@link DispatchEvent} that was being executed when the exception was thrown.
      * @param exception
-     *         The {@link Exception} thrown.
+     *         The thrown {@link Exception}.
+     * @param <T>
+     *         The type of the interaction.
      */
-    void handleException(DispatchEvent event, ExecutableItem item, Exception exception);
+    <T extends Interaction> void handleException(DispatchEvent<T> event, Exception exception);
 
     /**
-     * Called when {@link DispatchEvent#getPath()} did not match any {@link InteractionItem}.
+     * Called when no {@link InteractionResponseHandler} could be found for the provided object.
      *
      * @param event
-     *         The unmatched {@link DispatchEvent}.
+     *         The {@link DispatchEvent} that was used to generate the response.
+     * @param response
+     *         The response object generated.
+     * @param <T>
+     *         The type of the interaction.
      */
-    void handleNoAction(DispatchEvent event);
-
-    /**
-     * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter ({@link
-     * InteractionItem#canExecute(JdaInteraction)}.
-     *
-     * @param event
-     *         The {@link DispatchEvent} used.
-     * @param item
-     *         The {@link InteractionItem} that could not be executed.
-     */
-    void handleNonExecutable(DispatchEvent event, InteractionItem item);
+    <T extends Interaction> void onNoResponseHandlerFound(DispatchEvent<T> event, Object response);
 
 }
