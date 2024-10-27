@@ -12,7 +12,6 @@ import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInterac
 import fr.alexpado.jda.interactions.interfaces.interactions.slash.SlashInteractionContainer;
 import fr.alexpado.jda.interactions.tools.InteractionUtils;
 import io.sentry.IScope;
-import io.sentry.Scope;
 import io.sentry.Sentry;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -254,13 +253,19 @@ public class InteractionExtension extends ListenerAdapter {
 
                 timedAction.action("answering", "Finding and using the response handler");
                 // Prioritize self-contained feature
-                if (container instanceof InteractionResponseHandler localHandler && localHandler.canHandle(event, result)) {
+                if (container instanceof InteractionResponseHandler localHandler && localHandler.canHandle(
+                        event,
+                        result
+                )) {
                     responseHandler = localHandler;
                 } else {
 
                     Object finalResult = result;
                     responseHandler = this.responseHandlers.stream()
-                                                           .filter(registeredHandler -> registeredHandler.canHandle(event, finalResult))
+                                                           .filter(registeredHandler -> registeredHandler.canHandle(
+                                                                   event,
+                                                                   finalResult
+                                                           ))
                                                            .findAny()
                                                            .orElse(null);
                 }
@@ -273,7 +278,6 @@ public class InteractionExtension extends ListenerAdapter {
                 responseHandler.handleResponse(event, result);
                 timedAction.endAction();
             } catch (Exception e) {
-                Sentry.captureException(e);
                 this.errorHandler.handleException(event, e);
             }
         }
@@ -288,12 +292,7 @@ public class InteractionExtension extends ListenerAdapter {
 
         String transaction = "slash://%s".formatted(event.getFullCommandName().replace(" ", "/"));
 
-        try {
-            this.run(transaction, SlashCommandInteraction.class, event);
-        } catch (Exception e) {
-            Sentry.captureException(e);
-        }
-
+        this.run(transaction, SlashCommandInteraction.class, event);
         Sentry.popScope();
     }
 
@@ -310,12 +309,7 @@ public class InteractionExtension extends ListenerAdapter {
             transaction = "button://%s".formatted(event.getComponentId());
         }
 
-        try {
-            this.run(transaction, ButtonInteraction.class, event);
-        } catch (Exception e) {
-            Sentry.captureException(e);
-        }
-
+        this.run(transaction, ButtonInteraction.class, event);
         Sentry.popScope();
     }
 
@@ -326,12 +320,7 @@ public class InteractionExtension extends ListenerAdapter {
                                                                                             .replace(" ", "/")));
 
         String transaction = "complete://%s".formatted(event.getFullCommandName().replace(" ", "/"));
-        try {
-            this.run(transaction, CommandAutoCompleteInteraction.class, event);
-        } catch (Exception e) {
-            Sentry.captureException(e);
-        }
-
+        this.run(transaction, CommandAutoCompleteInteraction.class, event);
         Sentry.popScope();
     }
     // </editor-fold>
