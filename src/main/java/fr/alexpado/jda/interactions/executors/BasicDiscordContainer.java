@@ -9,9 +9,12 @@ import fr.alexpado.jda.interactions.ext.InteractionCommandData;
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
-import net.dv8tion.jda.api.MessageBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.callbacks.IDeferrableCallback;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -51,8 +54,8 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
             Method[] methods = clazz.getMethods();
 
             List<Method> interactiveMethods = Arrays.stream(methods)
-                    .filter(method -> method.isAnnotationPresent(Interact.class))
-                    .toList();
+                                                    .filter(method -> method.isAnnotationPresent(Interact.class))
+                                                    .toList();
 
             for (Method interactiveMethod : interactiveMethods) {
                 Interact interact = interactiveMethod.getAnnotation(Interact.class);
@@ -64,7 +67,13 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
                         String name   = interactionItem.getMeta().getName();
                         String prefix = Arrays.asList(name.split("/")).get(0);
 
-                        InteractionCommandData data = this.dataMap.getOrDefault(prefix, new InteractionCommandData(prefix, interactionItem.getMeta()));
+                        InteractionCommandData data = this.dataMap.getOrDefault(
+                                prefix,
+                                new InteractionCommandData(
+                                        prefix,
+                                        interactionItem.getMeta()
+                                )
+                        );
                         data.register(interactionItem.getMeta());
                         this.dataMap.put(prefix, data);
                     }
@@ -84,8 +93,8 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
      * @param updateAction
      *         The {@link CommandListUpdateAction} to use to register slash commands.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call
+     *         {@link CommandListUpdateAction#queue()}.
      */
     @Override
     public CommandListUpdateAction build(CommandListUpdateAction updateAction) {
@@ -112,11 +121,9 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     }
 
     /**
-     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be
-     * called.
-     *
-     * The object must have at least one public method annotated with {@link Interact} for this call to serve a
-     * purpose.
+     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be called.
+     * <p>
+     * The object must have at least one public method annotated with {@link Interact} for this call to serve a purpose.
      *
      * @param holder
      *         The object to add.
@@ -128,8 +135,8 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     }
 
     /**
-     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple
-     * interaction on-the-fly without bothering with annotations.
+     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple interaction
+     * on-the-fly without bothering with annotations.
      *
      * @param meta
      *         The {@link InteractionMeta} of the new interaction.
@@ -217,14 +224,14 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
         String realPath = String.format("%s://%s%s", path.getScheme(), path.getHost(), path.getPath());
 
         return this.items.stream()
-                .filter(item -> item.getPath().equals(realPath))
-                .findFirst()
-                .map(ExecutableItem.class::cast);
+                         .filter(item -> item.getPath().equals(realPath))
+                         .findFirst()
+                         .map(ExecutableItem.class::cast);
     }
 
     /**
-     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can
-     * add custom options.
+     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can add
+     * custom options.
      *
      * @param event
      *         The {@link DispatchEvent} that will be used.
@@ -261,12 +268,12 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
     @Override
     public void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response) {
 
-        MessageBuilder builder = new MessageBuilder();
-        builder.setEmbeds(response.getEmbed().build());
+        MessageEmbed embed = response.getEmbed().build();
 
-
-        if (event.getInteraction().isAcknowledged()) {
-            event.getInteraction().getHook().editOriginal(builder.build()).queue();
+        if (event.getInteraction().isAcknowledged() && event.getInteraction() instanceof IDeferrableCallback cb) {
+            MessageEditBuilder meb = new MessageEditBuilder();
+            meb.setEmbeds(embed);
+            cb.getHook().editOriginal(meb.build()).queue();
             return;
         }
 
@@ -278,10 +285,16 @@ public class BasicDiscordContainer implements InteractionExecutor, InteractionCo
             ephemeral = response.isEphemeral();
         }
 
-        event.getInteraction()
-                .reply(builder.build())
-                .setEphemeral(ephemeral)
-                .queue();
+        if (event.getInteraction() instanceof ReplyCallbackAction cb) {
+            cb.setEmbeds(embed)
+              .setEphemeral(ephemeral)
+              .queue();
+            return;
+        }
+
+        throw new UnsupportedOperationException("Cannot handle response for interaction " + event.getInteraction()
+                                                                                                 .getClass()
+                                                                                                 .getName());
     }
 
 }

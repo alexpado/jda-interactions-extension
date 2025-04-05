@@ -14,16 +14,16 @@ public interface InteractionResponse {
     EmbedBuilder getEmbed();
 
     /**
-     * Retrieves this {@link InteractionResponse}'s code. This isn't used in this library, but you can still use it when
-     * you have a command depending on another.
+     * Retrieves this {@link InteractionResponse}'s code. This isn't used in this library, but you can still use it when you have
+     * a command depending on another.
      *
      * @return A code.
      */
     int getCode();
 
     /**
-     * Define if this {@link InteractionResponse} should be displayed only to the user running the current interaction.
-     * This value won't be applied everytime due do {@link Interact} and {@link InteractionMeta} policy.
+     * Define if this {@link InteractionResponse} should be displayed only to the user running the current interaction. This value
+     * won't be applied everytime due do {@link Interact} and {@link InteractionMeta} policy.
      *
      * @return True if hidden, false otherwise.
      */

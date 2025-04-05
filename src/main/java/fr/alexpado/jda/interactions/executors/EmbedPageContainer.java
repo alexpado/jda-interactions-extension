@@ -7,12 +7,13 @@ import fr.alexpado.jda.interactions.entities.responses.SimpleInteractionResponse
 import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
 import fr.alexpado.jda.interactions.interfaces.FeatureContainer;
 import fr.alexpado.jda.interactions.interfaces.interactions.*;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 
 import java.awt.*;
 import java.net.URI;
@@ -55,8 +56,8 @@ public class EmbedPageContainer implements FeatureContainer {
     }
 
     /**
-     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can
-     * add custom options.
+     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can add
+     * custom options.
      *
      * @param event
      *         The {@link DispatchEvent} that will be used.
@@ -83,7 +84,12 @@ public class EmbedPageContainer implements FeatureContainer {
         String action = event.getPath().getPath();
 
         if (!this.responses.containsKey(id)) {
-            return new SimpleInteractionResponse(InteractionTools.asEmbedBuilder(Color.RED, "This paginated message cannot be interacted with anymore."), true);
+            return new SimpleInteractionResponse(
+                    InteractionTools.asEmbedBuilder(
+                            Color.RED,
+                            "This paginated message cannot be interacted with anymore."
+                    ), true
+            );
         }
 
         PaginatedResponse<?> paginatedResponse = this.responses.get(id);
@@ -99,7 +105,12 @@ public class EmbedPageContainer implements FeatureContainer {
         }
 
         this.responses.remove(id);
-        return new SimpleInteractionResponse(InteractionTools.asEmbedBuilder(Color.RED, "This paginated message cannot be interacted with anymore."), true);
+        return new SimpleInteractionResponse(
+                InteractionTools.asEmbedBuilder(
+                        Color.RED,
+                        "This paginated message cannot be interacted with anymore."
+                ), true
+        );
     }
 
     /**
@@ -133,13 +144,13 @@ public class EmbedPageContainer implements FeatureContainer {
 
         InteractionHook hook;
 
-        if (event.getInteraction() instanceof ButtonClickEvent button) {
+        if (event.getInteraction() instanceof ButtonInteraction button) {
             hook = button.getHook();
 
             if (!button.isAcknowledged()) {
                 hook = button.deferEdit().complete();
             }
-        } else if (event.getInteraction() instanceof SlashCommandEvent slash) {
+        } else if (event.getInteraction() instanceof SlashCommandInteraction slash) {
             hook = slash.getHook();
 
             if (!slash.isAcknowledged()) {
@@ -153,10 +164,11 @@ public class EmbedPageContainer implements FeatureContainer {
         Message message = hook.retrieveOriginal().complete();
         this.responses.put(message.getId(), paginatedResponse);
 
-        MessageBuilder builder = new MessageBuilder();
-        builder.setEmbeds(paginatedResponse.getEmbed().build());
-        builder.setActionRows(paginatedResponse.getActionRows(message.getId()));
-        hook.editOriginal(builder.build()).queue();
+        MessageEditBuilder meb = new MessageEditBuilder();
+        meb.setEmbeds(paginatedResponse.getEmbed().build());
+        meb.setComponents(paginatedResponse.getActionRows(message.getId()));
+
+        hook.editOriginal(meb.build()).queue();
     }
 
     /**
@@ -173,10 +185,11 @@ public class EmbedPageContainer implements FeatureContainer {
     public void handleException(DispatchEvent event, ExecutableItem item, Exception exception) {
 
         exception.printStackTrace();
-        event.getInteraction()
-                .replyEmbeds(InteractionTools.asEmbed(Color.RED, "An error occurred."))
-                .setEphemeral(true)
-                .queue();
+        if (event.getInteraction() instanceof IReplyCallback cb) {
+            cb.replyEmbeds(InteractionTools.asEmbed(Color.RED, "An error occurred."))
+              .setEphemeral(true)
+              .queue();
+        }
     }
 
     /**
@@ -191,8 +204,8 @@ public class EmbedPageContainer implements FeatureContainer {
     }
 
     /**
-     * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter ({@link
-     * InteractionItem#canExecute(Interaction)}.
+     * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter
+     * ({@link InteractionItem#canExecute(Interaction)}.
      *
      * @param event
      *         The {@link DispatchEvent} used.

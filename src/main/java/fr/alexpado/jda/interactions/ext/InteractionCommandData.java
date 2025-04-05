@@ -2,7 +2,7 @@ package fr.alexpado.jda.interactions.ext;
 
 import fr.alexpado.jda.interactions.InteractionTools;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -10,10 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InteractionCommandData extends CommandData {
+public class InteractionCommandData extends CommandDataImpl {
 
-    private final Map<String, InteractionGroupData>      groups          = new HashMap<>();
-    private final Map<String, InteractionSubcommandData> subCommands     = new HashMap<>();
+    private final Map<String, InteractionGroupData>      groups      = new HashMap<>();
+    private final Map<String, InteractionSubcommandData> subCommands = new HashMap<>();
 
     public InteractionCommandData(@NotNull String name, @NotNull InteractionMeta meta) {
 
@@ -38,9 +38,9 @@ public class InteractionCommandData extends CommandData {
 
         List<String> path = Arrays.asList(meta.getName().split("/"));
 
-        boolean isOverflowing      = path.size() > 3;
-        boolean hasGroupError      = path.size() == 2 && !this.groups.isEmpty();
-        boolean hasSubGroupError   = path.size() == 3 && !this.subCommands.isEmpty();
+        boolean isOverflowing    = path.size() > 3;
+        boolean hasGroupError    = path.size() == 2 && !this.groups.isEmpty();
+        boolean hasSubGroupError = path.size() == 3 && !this.subCommands.isEmpty();
 
         if (isOverflowing || hasGroupError || hasSubGroupError) {
             throw new IllegalStateException(String.format("Invalid nesting for %s", meta.getName()));

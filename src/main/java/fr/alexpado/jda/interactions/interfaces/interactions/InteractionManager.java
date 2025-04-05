@@ -19,8 +19,8 @@ public interface InteractionManager extends InteractionContainer {
     }
 
     /**
-     * Register a custom class injection when calling method annotated with {@link Interact}. Parameters will be
-     * injected using mapping defined with this method.
+     * Register a custom class injection when calling method annotated with {@link Interact}. Parameters will be injected using
+     * mapping defined with this method.
      *
      * @param target
      *         The target class for the injection.
@@ -37,8 +37,8 @@ public interface InteractionManager extends InteractionContainer {
      * @param jda
      *         The {@link JDA} instance to use.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call
+     *         {@link CommandListUpdateAction#queue()}.
      */
     CommandListUpdateAction build(JDA jda);
 
@@ -48,8 +48,8 @@ public interface InteractionManager extends InteractionContainer {
      * @param guild
      *         The {@link Guild} instance to use.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call
+     *         {@link CommandListUpdateAction#queue()}.
      */
     CommandListUpdateAction build(Guild guild);
 

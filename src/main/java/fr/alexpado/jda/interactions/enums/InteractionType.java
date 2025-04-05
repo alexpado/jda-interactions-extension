@@ -2,7 +2,7 @@ package fr.alexpado.jda.interactions.enums;
 
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
-import net.dv8tion.jda.api.interactions.components.ButtonInteraction;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 
 import java.util.function.Predicate;
 
@@ -29,11 +29,14 @@ public enum InteractionType {
 
     public String getPrefix() {
 
-        return prefix;
+        return this.prefix;
     }
 
     public String withPrefix(String path) {
 
+        if (path.startsWith("/")) {
+            return this.prefix + path.substring(1);
+        }
         return this.prefix + path;
     }
 }

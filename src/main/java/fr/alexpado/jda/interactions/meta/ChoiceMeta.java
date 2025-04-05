@@ -21,12 +21,12 @@ public class ChoiceMeta {
 
     public String getId() {
 
-        return id;
+        return this.id;
     }
 
     public String getDisplay() {
 
-        return display;
+        return this.display;
     }
 
 }

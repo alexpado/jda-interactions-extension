@@ -27,8 +27,8 @@ public interface InteractionErrorHandler {
     void handleNoAction(DispatchEvent event);
 
     /**
-     * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter ({@link
-     * InteractionItem#canExecute(Interaction)}.
+     * Called when an {@link InteractionItem} has been matched but could not be executed due to its filter
+     * ({@link InteractionItem#canExecute(Interaction)}.
      *
      * @param event
      *         The {@link DispatchEvent} used.

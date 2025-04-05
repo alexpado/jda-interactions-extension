@@ -10,8 +10,8 @@ public class InteractionDeclarationException extends RuntimeException {
     private final String   error;
 
     /**
-     * Constructs a new runtime exception with {@code null} as its detail message.  The cause is not initialized, and
-     * may subsequently be initialized by a call to {@link #initCause}.
+     * Constructs a new runtime exception with {@code null} as its detail message.  The cause is not initialized, and may
+     * subsequently be initialized by a call to {@link #initCause}.
      */
     public InteractionDeclarationException(Class<?> declarationClass, Method declarationMethod, String path, String error) {
 
@@ -22,8 +22,8 @@ public class InteractionDeclarationException extends RuntimeException {
     }
 
     /**
-     * Constructs a new runtime exception with {@code null} as its detail message.  The cause is not initialized, and
-     * may subsequently be initialized by a call to {@link #initCause}.
+     * Constructs a new runtime exception with {@code null} as its detail message.  The cause is not initialized, and may
+     * subsequently be initialized by a call to {@link #initCause}.
      */
     public InteractionDeclarationException(Exception e, Class<?> declarationClass, Method declarationMethod, String path, String error) {
 
@@ -36,22 +36,22 @@ public class InteractionDeclarationException extends RuntimeException {
 
     public Class<?> getDeclarationClass() {
 
-        return declarationClass;
+        return this.declarationClass;
     }
 
     public Method getDeclarationMethod() {
 
-        return declarationMethod;
+        return this.declarationMethod;
     }
 
     public String getPath() {
 
-        return path;
+        return this.path;
     }
 
     public String getError() {
 
-        return error;
+        return this.error;
     }
 
     /**
@@ -62,8 +62,10 @@ public class InteractionDeclarationException extends RuntimeException {
     @Override
     public String getMessage() {
 
-        return String.format("[%s] (%s::%s) %s", this.getPath(), this.getDeclarationClass().getSimpleName(), this
-                .getDeclarationMethod().getName(), this.getError());
+        return String.format(
+                "[%s] (%s::%s) %s", this.getPath(), this.getDeclarationClass().getSimpleName(), this
+                        .getDeclarationMethod().getName(), this.getError()
+        );
     }
 
 }

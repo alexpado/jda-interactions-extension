@@ -46,27 +46,27 @@ public class OptionMeta {
 
     public String getName() {
 
-        return name;
+        return this.name;
     }
 
     public String getDescription() {
 
-        return description;
+        return this.description;
     }
 
     public List<ChoiceMeta> getChoices() {
 
-        return choices;
+        return this.choices;
     }
 
     public boolean isRequired() {
 
-        return required;
+        return this.required;
     }
 
     public OptionType getType() {
 
-        return type;
+        return this.type;
     }
 
 }

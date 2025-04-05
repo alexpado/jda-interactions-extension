@@ -21,8 +21,8 @@ public interface InteractionItem extends ExecutableItem {
     String getPath();
 
     /**
-     * Check if this {@link InteractionItem} can be used with the given {@link Interaction}. This is useful if you want
-     * to restrict some actions to some guilds.
+     * Check if this {@link InteractionItem} can be used with the given {@link Interaction}. This is useful if you want to
+     * restrict some actions to some guilds.
      *
      * @param interaction
      *         The Discord {@link Interaction}.

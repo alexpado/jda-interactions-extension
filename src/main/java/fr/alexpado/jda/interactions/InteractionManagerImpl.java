@@ -9,15 +9,22 @@ import fr.alexpado.jda.interactions.interfaces.interactions.*;
 import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.Interaction;
-import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.InteractionType;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -53,19 +60,15 @@ public class InteractionManagerImpl implements InteractionManager {
         jda.addEventListener(new InteractionListener(this));
 
         // Default injection
+        this.registerMapping(Interaction.class, interaction -> interaction);
         this.registerMapping(InteractionType.class, Interaction::getType);
         this.registerMapping(Guild.class, Interaction::getGuild);
         this.registerMapping(ChannelType.class, Interaction::getChannelType);
         this.registerMapping(User.class, Interaction::getUser);
         this.registerMapping(Member.class, Interaction::getMember);
         this.registerMapping(Channel.class, Interaction::getChannel);
-        this.registerMapping(InteractionHook.class, Interaction::getHook);
         this.registerMapping(GuildChannel.class, Interaction::getGuildChannel);
         this.registerMapping(MessageChannel.class, Interaction::getMessageChannel);
-        this.registerMapping(TextChannel.class, Interaction::getTextChannel);
-        this.registerMapping(NewsChannel.class, Interaction::getNewsChannel);
-        this.registerMapping(VoiceChannel.class, Interaction::getVoiceChannel);
-        this.registerMapping(PrivateChannel.class, Interaction::getPrivateChannel);
         this.registerMapping(JDA.class, Interaction::getJDA);
     }
 
@@ -96,8 +99,8 @@ public class InteractionManagerImpl implements InteractionManager {
     }
 
     /**
-     * Register a custom class injection when calling method annotated with {@link Interact}. Parameters will be
-     * injected using mapping defined with this method.
+     * Register a custom class injection when calling method annotated with {@link Interact}. Parameters will be injected using
+     * mapping defined with this method.
      *
      * @param target
      *         The target class for the injection.
@@ -118,8 +121,8 @@ public class InteractionManagerImpl implements InteractionManager {
      * @param jda
      *         The {@link JDA} instance to use.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call
+     *         {@link CommandListUpdateAction#queue()}.
      */
     @Override
     public CommandListUpdateAction build(JDA jda) {
@@ -133,8 +136,8 @@ public class InteractionManagerImpl implements InteractionManager {
      * @param guild
      *         The {@link Guild} instance to use.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call
+     *         {@link CommandListUpdateAction#queue()}.
      */
     @Override
     public CommandListUpdateAction build(Guild guild) {
@@ -153,16 +156,19 @@ public class InteractionManagerImpl implements InteractionManager {
 
         // <editor-fold desc="Step 1 - Preprocessing">
         Optional<InteractionExecutor> optionalExecutor = this.executors.stream()
-                .filter(item -> item.canResolve(event.getPath()))
-                .findFirst();
+                                                                       .filter(item -> item.canResolve(event.getPath()))
+                                                                       .findFirst();
 
         if (optionalExecutor.isEmpty()) {
-            event.getInteraction().replyEmbeds(
-                    new EmbedBuilder()
-                            .setDescription("Sorry, an error occurred and your request could not be handled.")
-                            .setColor(Color.RED)
-                            .build()
-            ).queue();
+            if (event.getInteraction() instanceof ReplyCallbackAction cb) {
+                cb.setEmbeds(
+                        new EmbedBuilder()
+                                .setDescription("Sorry, an error occurred and your request could not be handled.")
+                                .setColor(Color.RED)
+                                .build()
+                ).queue();
+            }
+
             throw new IllegalStateException("No resolver found for path: " + event.getPath());
         }
 
@@ -187,8 +193,8 @@ public class InteractionManagerImpl implements InteractionManager {
                 return;
             }
 
-            if (item.getMeta().isDeferred()) {
-                event.getInteraction().deferReply(item.getMeta().isHidden()).complete();
+            if (item.getMeta().isDeferred() && event.getInteraction() instanceof IReplyCallback cb) {
+                cb.deferReply(item.getMeta().isHidden()).complete();
             }
         }
 
@@ -203,13 +209,17 @@ public class InteractionManagerImpl implements InteractionManager {
 
         // <editor-fold desc="Step 3 - Response Handling">
         Optional<InteractionResponseHandler> optionalResponseHandler = this.responseHandlers.stream()
-                .filter(item -> item.canHandle(response))
-                .findFirst();
+                                                                                            .filter(item -> item.canHandle(
+                                                                                                    response))
+                                                                                            .findFirst();
 
         if (optionalResponseHandler.isEmpty()) {
-            event.getInteraction().replyEmbeds(InteractionTools.asEmbed(Color.RED, "Unable to display response."))
-                    .queue();
-            return;
+            if (event.getInteraction() instanceof IReplyCallback cb) {
+                cb.replyEmbeds(InteractionTools.asEmbed(Color.RED, "Unable to display response.")).queue();
+                return;
+            }
+
+            throw new IllegalStateException("Unable to handle response, and could not notify the user of it either");
         }
 
         InteractionResponseHandler responseHandler = optionalResponseHandler.get();
@@ -243,11 +253,9 @@ public class InteractionManagerImpl implements InteractionManager {
     }
 
     /**
-     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be
-     * called.
-     *
-     * The object must have at least one public method annotated with {@link Interact} for this call to serve a
-     * purpose.
+     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be called.
+     * <p>
+     * The object must have at least one public method annotated with {@link Interact} for this call to serve a purpose.
      *
      * @param holder
      *         The object to add.
@@ -259,8 +267,8 @@ public class InteractionManagerImpl implements InteractionManager {
     }
 
     /**
-     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple
-     * interaction on-the-fly without bothering with annotations.
+     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple interaction
+     * on-the-fly without bothering with annotations.
      *
      * @param meta
      *         The {@link InteractionMeta} of the new interaction.
@@ -292,8 +300,8 @@ public class InteractionManagerImpl implements InteractionManager {
      * @param updateAction
      *         The {@link CommandListUpdateAction} to use to register slash commands.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call
+     *         {@link CommandListUpdateAction#queue()}.
      */
     @Override
     public CommandListUpdateAction build(CommandListUpdateAction updateAction) {

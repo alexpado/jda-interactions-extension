@@ -11,11 +11,9 @@ import java.util.List;
 public interface InteractionContainer {
 
     /**
-     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be
-     * called.
-     *
-     * The object must have at least one public method annotated with {@link Interact} for this call to serve a
-     * purpose.
+     * Add the provided object to a list of objects to scan when {@link #build(CommandListUpdateAction)} will be called.
+     * <p>
+     * The object must have at least one public method annotated with {@link Interact} for this call to serve a purpose.
      *
      * @param holder
      *         The object to add.
@@ -23,8 +21,8 @@ public interface InteractionContainer {
     void registerInteraction(Object holder);
 
     /**
-     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple
-     * interaction on-the-fly without bothering with annotations.
+     * Register a new {@link ExecutableItem} with the provided {@link InteractionMeta}. This allows to register simple interaction
+     * on-the-fly without bothering with annotations.
      *
      * @param meta
      *         The {@link InteractionMeta} of the new interaction.
@@ -48,8 +46,8 @@ public interface InteractionContainer {
      * @param updateAction
      *         The {@link CommandListUpdateAction} to use to register slash commands.
      *
-     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call {@link
-     *         CommandListUpdateAction#queue()}.
+     * @return A {@link CommandListUpdateAction} with all commands registered. Do not forget to call
+     *         {@link CommandListUpdateAction#queue()}.
      */
     CommandListUpdateAction build(CommandListUpdateAction updateAction);
 

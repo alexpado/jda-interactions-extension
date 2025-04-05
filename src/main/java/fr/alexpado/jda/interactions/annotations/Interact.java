@@ -2,8 +2,8 @@ package fr.alexpado.jda.interactions.annotations;
 
 import fr.alexpado.jda.interactions.enums.InteractionType;
 import fr.alexpado.jda.interactions.enums.SlashTarget;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -55,7 +55,7 @@ public @interface Interact {
 
     /**
      * Define whether the result should be shown only for the user using this interaction only when the interaction is a
-     * {@link SlashCommandEvent}.
+     * {@link SlashCommandInteractionEvent}.
      *
      * @return True if private, false otherwise.
      */
@@ -63,7 +63,7 @@ public @interface Interact {
 
     /**
      * Define whether the result should be shown only for the user using this interaction only when the interaction is a
-     * {@link ButtonClickEvent}.
+     * {@link ButtonInteractionEvent}.
      *
      * @return True if private, false otherwise.
      */

@@ -4,22 +4,28 @@ plugins {
     id 'java-library'
     id 'signing'
     id 'maven-publish'
-    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
-    id 'com.github.ben-manes.versions' version '0.42.0'
-    id 'org.ajoberstar.reckon' version '0.16.1'
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
+    id 'com.github.ben-manes.versions' version '0.52.0'
+    id 'org.ajoberstar.reckon' version '0.19.1'
 }
 
-def generalCharset = StandardCharsets.UTF_8.name();
+def generalCharset = StandardCharsets.UTF_8.name()
+
+static def isNonStable(String version) {
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
 
 reckon {
+    defaultInferredScope = 'patch'
     stages('dev', 'beta', 'rc', 'final')
-    calcScopeFromProp()
+
+    scopeCalc = calcScopeFromProp() | calcScopeFromCommitMessages()
+    stageCalc = calcStageFromProp()
 }
 
 group 'fr.alexpado'
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
 
 compileJava.options.encoding = generalCharset
 compileTestJava.options.encoding = generalCharset
@@ -30,21 +36,14 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.12.1'
 
-    implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-alpha.9'
+    implementation group: 'net.dv8tion', name: 'JDA', version: '5.3.1'
 }
 
 test {
     useJUnitPlatform()
-}
-
-
-static def isNonStable(String version) {
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
 }
 
 tasks.named("dependencyUpdates").configure {
@@ -54,28 +53,12 @@ tasks.named("dependencyUpdates").configure {
 }
 
 // <editor-fold desc="Publish Configuration Hell">
-ext["signing.keyId"] = ''
-ext["signing.password"] = ''
-ext["signing.secretKeyRingFile"] = ''
-ext["ossrhUsername"] = ''
-ext["ossrhPassword"] = ''
-ext["sonatypeStagingProfileId"] = ''
-
-File secretPropsFile = project.rootProject.file('secret.properties')
-if (secretPropsFile.exists()) {
-    // Read secret.properties file first if it exists
-    Properties p = new Properties()
-    new FileInputStream(secretPropsFile).withCloseable { is -> p.load(is) }
-    p.each { name, value -> ext[name] = value }
-} else {
-    // Use system environment variables
-    ext["ossrhUsername"] = System.getenv('OSSRH_USERNAME')
-    ext["ossrhPassword"] = System.getenv('OSSRH_PASSWORD')
-    ext["sonatypeStagingProfileId"] = System.getenv('SONATYPE_STAGING_PROFILE_ID')
-    ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID')
-    ext["signing.password"] = System.getenv('SIGNING_PASSWORD')
-    ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
-}
+ext["ossrhUsername"] = System.getenv('OSSRH_USERNAME')
+ext["ossrhPassword"] = System.getenv('OSSRH_PASSWORD')
+ext["sonatypeStagingProfileId"] = System.getenv('SONATYPE_STAGING_PROFILE_ID')
+ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID')
+ext["signing.password"] = System.getenv('SIGNING_PASSWORD')
+ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
 
 nexusPublishing {
     repositories {
@@ -126,6 +109,9 @@ publishing {
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
     withJavadocJar()
     withSourcesJar()
 }

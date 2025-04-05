@@ -29,8 +29,8 @@ public interface InteractionExecutor {
     Optional<ExecutableItem> resolve(URI path);
 
     /**
-     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can
-     * add custom options.
+     * Called when the {@link DispatchEvent} is ready and is about to be used on an {@link ExecutableItem}. Here you can add
+     * custom options.
      *
      * @param event
      *         The {@link DispatchEvent} that will be used.

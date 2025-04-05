@@ -71,7 +71,7 @@ public class InteractionMeta {
 
     public String getName() {
 
-        return name;
+        return this.name;
     }
 
     public String getMetaName() {
@@ -81,32 +81,32 @@ public class InteractionMeta {
 
     public String getDescription() {
 
-        return description;
+        return this.description;
     }
 
     public InteractionType getType() {
 
-        return type;
+        return this.type;
     }
 
     public SlashTarget getTarget() {
 
-        return target;
+        return this.target;
     }
 
     public List<OptionMeta> getOptions() {
 
-        return options;
+        return this.options;
     }
 
     public boolean isHidden() {
 
-        return hide;
+        return this.hide;
     }
 
     public boolean isDeferred() {
 
-        return defer;
+        return this.defer;
     }
 
 }

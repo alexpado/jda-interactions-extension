@@ -26,16 +26,17 @@ public class DispatchEvent {
 
     public URI getPath() {
 
-        return path;
+        return this.path;
     }
 
     public Interaction getInteraction() {
 
-        return interaction;
+        return this.interaction;
     }
 
     public Map<String, Object> getOptions() {
 
-        return options;
+        return this.options;
     }
+
 }

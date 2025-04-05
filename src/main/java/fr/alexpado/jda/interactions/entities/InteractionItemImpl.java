@@ -13,7 +13,7 @@ import fr.alexpado.jda.interactions.meta.InteractionMeta;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -54,15 +54,20 @@ public class InteractionItemImpl implements InteractionItem {
         };
 
         if (!this.method.getReturnType().equals(InteractionResponse.class)) {
-            throw new InteractionDeclarationException(instance.getClass(), method, this.getName(), "The method does not return the InteractionResult class.");
+            throw new InteractionDeclarationException(
+                    instance.getClass(),
+                    method,
+                    this.getName(),
+                    "The method does not return the InteractionResult class."
+            );
         }
     }
 
     public static List<InteractionItem> of(Object instance, Method method, Interact interact) {
 
         return InteractionMeta.of(interact).stream()
-                .map(meta -> new InteractionItemImpl(instance, method, meta))
-                .collect(Collectors.toList());
+                              .map(meta -> new InteractionItemImpl(instance, method, meta))
+                              .collect(Collectors.toList());
     }
 
     /**
@@ -98,10 +103,21 @@ public class InteractionItemImpl implements InteractionItem {
                 try {
                     callArgs.add(mapping.get(parameter.getType()).apply(event.getInteraction()));
                 } catch (Exception e) {
-                    throw new InteractionDeclarationException(e, this.instance.getClass(), this.method, this.getName(), "Unable to inject parameter " + paramType);
+                    throw new InteractionDeclarationException(
+                            e,
+                            this.instance.getClass(),
+                            this.method,
+                            this.getName(),
+                            "Unable to inject parameter " + paramType
+                    );
                 }
             } else {
-                throw new InteractionDeclarationException(this.instance.getClass(), this.method, this.getName(), "Unmapped parameter " + paramType);
+                throw new InteractionDeclarationException(
+                        this.instance.getClass(),
+                        this.method,
+                        this.getName(),
+                        "Unmapped parameter " + paramType
+                );
             }
 
         }
@@ -113,12 +129,17 @@ public class InteractionItemImpl implements InteractionItem {
         }
 
         String returnType = invoke.getClass().getSimpleName();
-        throw new InteractionDeclarationException(this.instance.getClass(), this.method, this.getName(), "Unsupported return type (" + returnType + ")");
+        throw new InteractionDeclarationException(
+                this.instance.getClass(),
+                this.method,
+                this.getName(),
+                "Unsupported return type (" + returnType + ")"
+        );
     }
 
     /**
-     * Check if this {@link InteractionItem} can be used with the given {@link Interaction}. This is useful if you want
-     * to restrict some actions to some guilds.
+     * Check if this {@link InteractionItem} can be used with the given {@link Interaction}. This is useful if you want to
+     * restrict some actions to some guilds.
      *
      * @param interaction
      *         The Discord {@link Interaction}.
@@ -182,10 +203,17 @@ public class InteractionItemImpl implements InteractionItem {
                     case INTEGER -> eventOption.getAsLong();
                     case BOOLEAN -> eventOption.getAsBoolean();
                     case USER -> eventOption.getAsUser();
-                    case CHANNEL -> eventOption.getAsGuildChannel();
+                    case CHANNEL -> eventOption.getAsChannel();
                     case ROLE -> eventOption.getAsRole();
                     case MENTIONABLE -> eventOption.getAsMentionable();
-                    default -> throw new InteractionDeclarationException(this.instance.getClass(), this.method, this.getName(), "Unsupported option " + option.name());
+                    case ATTACHMENT -> eventOption.getAsAttachment();
+                    case NUMBER -> eventOption.getAsDouble();
+                    default -> throw new InteractionDeclarationException(
+                            this.instance.getClass(),
+                            this.method,
+                            this.getName(),
+                            "Unsupported option " + option.name()
+                    );
                 };
             }
         }
