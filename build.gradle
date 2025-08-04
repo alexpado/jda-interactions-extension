@@ -82,6 +82,7 @@ publishing {
     publications {
         create("maven", MavenPublication) {
             artifactId = rootProject.name
+            from components.java
 
             pom {
                 name = project.name
