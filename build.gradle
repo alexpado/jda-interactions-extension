@@ -4,36 +4,40 @@ plugins {
     id 'java-library'
     id 'signing'
     id 'maven-publish'
-    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
-    id 'com.github.ben-manes.versions' version '0.51.0'
-    id 'org.ajoberstar.reckon' version '0.18.3'
-}
-
-def generalCharset = StandardCharsets.UTF_8.name()
-
-static def isNonStable(String version) {
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
+    id 'com.github.ben-manes.versions' version '0.52.0'
+    id 'org.ajoberstar.reckon' version '0.19.2'
 }
 
 group 'fr.alexpado'
 
-compileJava.options.encoding = generalCharset
-compileTestJava.options.encoding = generalCharset
-javadoc.options.encoding = generalCharset
+def generalCharset = StandardCharsets.UTF_8.name()
+
+// Toolchain (Gradle 9+, JDK 24)
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
 
 reckon {
     defaultInferredScope = 'patch'
-    stages('dev', 'beta', 'rc', 'final')
-
+    snapshots()
     scopeCalc = calcScopeFromProp() | calcScopeFromCommitMessages()
     stageCalc = calcStageFromProp()
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = generalCharset
+    options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = generalCharset
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
 }
 
 repositories {
@@ -41,15 +45,25 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.3'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
 
-    implementation group: 'net.dv8tion', name: 'JDA', version: '5.1.2'
-    implementation group: 'io.sentry', name: 'sentry', version: '7.16.0'
+    implementation group: 'net.dv8tion', name: 'JDA', version: '5.6.1'
+    implementation group: 'io.sentry', name: 'sentry', version: '7.15.0'
 }
 
 test {
     useJUnitPlatform()
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
 }
 
 dependencyUpdates {
@@ -58,23 +72,17 @@ dependencyUpdates {
     }
 }
 
-// <editor-fold desc="Publish Configuration Hell">
-nexusPublishing {
+publishing {
     repositories {
-        sonatype {  //only for users registered in Sonatype after 24 Feb 2021
-            stagingProfileId = sonatypeStagingProfileId
-            username = ossrhUsername
-            password = ossrhPassword
-
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        maven {
+            def releasesRepoUrl = layout.buildDirectory.dir('dist/releases')
+            def snapshotsRepoUrl = layout.buildDirectory.dir('dist/snapshots')
+            url = version.toString().endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
         }
     }
-}
-
-publishing {
     publications {
-        mavenJava(MavenPublication) {
+        create("maven", MavenPublication) {
+            artifactId = rootProject.name
             from components.java
 
             pom {
@@ -107,18 +115,22 @@ publishing {
     }
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
 signing {
-    sign publishing.publications
+    sign publishing.publications.maven
 }
 
-javadoc {
-    if (JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption('html5', true)
-    }
+tasks.register('zipSnapshot', Zip) {
+    group = 'distribution'
+    description = 'Zips the snapshot artifacts for Maven Central.'
+    from layout.buildDirectory.dir('dist/snapshots')
+    archiveFileName = "snapshot-${project.version}.zip"
+    destinationDirectory = layout.buildDirectory.dir('zips')
 }
-// </editor-fold>
+
+tasks.register('zipRelease', Zip) {
+    group = 'distribution'
+    description = 'Zips the release artifacts for Maven Central.'
+    from layout.buildDirectory.dir('dist/releases')
+    archiveFileName = "release-${project.version}.zip"
+    destinationDirectory = layout.buildDirectory.dir('zips')
+}
