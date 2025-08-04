@@ -1,30 +1,39 @@
 package fr.alexpado.jda.interactions.interfaces.interactions;
 
 import fr.alexpado.jda.interactions.entities.DispatchEvent;
-import fr.alexpado.jda.interactions.interfaces.ExecutableItem;
+import net.dv8tion.jda.api.interactions.Interaction;
+import org.jetbrains.annotations.Nullable;
 
+/**
+ * Interface representing an object being able to handle a specific type of interaction response defined by
+ * {@link #canHandle(DispatchEvent, Object)}.
+ */
 public interface InteractionResponseHandler {
 
     /**
-     * Check if this {@link InteractionResponseHandler} can handle the provided {@link InteractionResponse}.
+     * Check if this {@link InteractionResponseHandler} can handle the provided response.
      *
+     * @param event
+     *         The {@link DispatchEvent} source of the response.
      * @param response
-     *         The generated {@link InteractionResponse}.
+     *         The object representing the response given by an interaction.
+     * @param <T>
+     *         Type of the interaction.
      *
      * @return True if able to handle, false otherwise.
      */
-    boolean canHandle(InteractionResponse response);
+    <T extends Interaction> boolean canHandle(DispatchEvent<T> event, @Nullable Object response);
 
     /**
-     * Handle the {@link InteractionResponse} resulting from the {@link DispatchEvent} event provided.
+     * Handle the response resulting from the {@link DispatchEvent} event provided.
      *
      * @param event
-     *         The {@link DispatchEvent} source of the {@link InteractionResponse}.
-     * @param executable
-     *         The {@link ExecutableItem} that has been used to generate the {@link InteractionResponse}.
+     *         The {@link DispatchEvent} source of the response.
      * @param response
-     *         The {@link InteractionResponse} to handle.
+     *         The {@link Object} to handle.
+     * @param <T>
+     *         Type of the interaction.
      */
-    void handleResponse(DispatchEvent event, ExecutableItem executable, InteractionResponse response);
+    <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response);
 
 }

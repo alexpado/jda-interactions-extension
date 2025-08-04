@@ -49,6 +49,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
 
     implementation group: 'net.dv8tion', name: 'JDA', version: '5.6.1'
+    implementation group: 'io.sentry', name: 'sentry', version: '7.15.0'
 }
 
 test {

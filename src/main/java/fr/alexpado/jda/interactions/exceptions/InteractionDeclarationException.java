@@ -1,57 +1,71 @@
 package fr.alexpado.jda.interactions.exceptions;
 
+import fr.alexpado.jda.interactions.annotations.Param;
+import fr.alexpado.jda.interactions.interfaces.DiscordEmbeddable;
+import fr.alexpado.jda.interactions.interfaces.interactions.InteractionTarget;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.interactions.Interaction;
+
 import java.lang.reflect.Method;
 
-public class InteractionDeclarationException extends RuntimeException {
+/**
+ * {@link InteractionDeclarationException} is an exception thrown when an {@link InteractionTarget} had a parameter in
+ * its targeted method, but the parameter isn't annotated with {@link Param}.
+ */
+public class InteractionDeclarationException extends RuntimeException implements DiscordEmbeddable {
 
     private final Class<?> declarationClass;
     private final Method   declarationMethod;
     private final String   path;
-    private final String   error;
 
     /**
-     * Constructs a new runtime exception with {@code null} as its detail message.  The cause is not initialized, and may
-     * subsequently be initialized by a call to {@link #initCause}.
+     * Create a new instance of this {@link InteractionDeclarationException}.
+     *
+     * @param declarationClass
+     *         The class for which the interaction has a wrong declaration.
+     * @param declarationMethod
+     *         The method for which the interaction has a wrong declaration.
+     * @param path
+     *         The path of the interaction that was being executed.
+     * @param message
+     *         The message describing the cause of the exception.
      */
-    public InteractionDeclarationException(Class<?> declarationClass, Method declarationMethod, String path, String error) {
+    public InteractionDeclarationException(Class<?> declarationClass, Method declarationMethod, String path, String message) {
 
+        super(message);
         this.declarationClass  = declarationClass;
         this.declarationMethod = declarationMethod;
         this.path              = path;
-        this.error             = error;
     }
 
     /**
-     * Constructs a new runtime exception with {@code null} as its detail message.  The cause is not initialized, and may
-     * subsequently be initialized by a call to {@link #initCause}.
+     * Retrieve the {@link Class} in which the bad declaration has been found.
+     *
+     * @return A {@link Class}
      */
-    public InteractionDeclarationException(Exception e, Class<?> declarationClass, Method declarationMethod, String path, String error) {
-
-        super(e);
-        this.declarationClass  = declarationClass;
-        this.declarationMethod = declarationMethod;
-        this.path              = path;
-        this.error             = error;
-    }
-
     public Class<?> getDeclarationClass() {
 
         return this.declarationClass;
     }
 
+    /**
+     * Retrieve the {@link Method} in which the bad declaration has been found.
+     *
+     * @return A {@link Method}
+     */
     public Method getDeclarationMethod() {
 
         return this.declarationMethod;
     }
 
+    /**
+     * Retrieve the {@link Interaction} path which was in use when the exception occurred.
+     *
+     * @return The path
+     */
     public String getPath() {
 
         return this.path;
-    }
-
-    public String getError() {
-
-        return this.error;
     }
 
     /**
@@ -62,10 +76,31 @@ public class InteractionDeclarationException extends RuntimeException {
     @Override
     public String getMessage() {
 
-        return String.format(
-                "[%s] (%s::%s) %s", this.getPath(), this.getDeclarationClass().getSimpleName(), this
-                        .getDeclarationMethod().getName(), this.getError()
-        );
+        return String.format("[%s] (%s::%s) %s", this.getPath(), this.getDeclarationClass().getSimpleName(), this
+                .getDeclarationMethod().getName(), super.getMessage());
+    }
+
+    /**
+     * Retrieve an {@link EmbedBuilder} representing this {@link DiscordEmbeddable}.
+     *
+     * @return An {@link EmbedBuilder}.
+     */
+    @Override
+    public EmbedBuilder asEmbed() {
+
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.setDescription(super.getMessage());
+        builder.addField("Class", this.declarationClass.getSimpleName(), false);
+        builder.addField("Method", this.declarationMethod.getName(), false);
+        builder.addField("Path", this.path, false);
+
+        return builder;
+    }
+
+    @Override
+    public boolean showToEveryone() {
+
+        return false;
     }
 
 }
