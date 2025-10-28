@@ -2,7 +2,7 @@ package fr.alexpado.jda.interactions.responses;
 
 import fr.alexpado.jda.interactions.interfaces.interactions.button.ButtonInteractionTarget;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageRequest;
 
 import java.util.function.Consumer;
