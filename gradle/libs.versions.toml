@@ -1,0 +1,17 @@
+[versions]
+jda = "5.6.1"
+junitBom = "6.0.0"
+reckon = "1.0.1"
+sentry = "7.15.0"
+versionCatalogUpdatePlugin = "1.0.1"
+
+[libraries]
+discord-jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+stats-sentry = { module = "io.sentry:sentry", version.ref = "sentry" }
+
+[plugins]
+catalogUpdater = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdatePlugin" }
+reckon = { id = "org.ajoberstar.reckon", version.ref = "reckon" }

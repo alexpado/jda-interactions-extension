@@ -1,43 +1,18 @@
-import java.nio.charset.StandardCharsets
-
 plugins {
     id 'java-library'
     id 'signing'
     id 'maven-publish'
-    id 'com.github.ben-manes.versions' version '0.52.0'
-    id 'org.ajoberstar.reckon' version '0.19.2'
+    alias(libs.plugins.catalogUpdater)
+    alias(libs.plugins.reckon)
 }
 
 group 'fr.alexpado'
 
-def generalCharset = StandardCharsets.UTF_8.name()
+apply from: 'gradle/java.gradle'
+apply from: 'gradle/reckon.gradle'
 
-// Toolchain (Gradle 9+, JDK 24)
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(24)
-    }
-    withJavadocJar()
-    withSourcesJar()
-}
-
-reckon {
-    defaultInferredScope = 'patch'
-    snapshots()
-    scopeCalc = calcScopeFromProp() | calcScopeFromCommitMessages()
-    stageCalc = calcStageFromProp()
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = generalCharset
-    options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
-}
-
-tasks.withType(Javadoc).configureEach {
-    options.encoding = generalCharset
-    if (JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption('html5', true)
-    }
+project.afterEvaluate {
+    apply from: 'gradle/publication.gradle'
 }
 
 repositories {
@@ -45,92 +20,15 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
+    testImplementation platform(libs.junit.bom)
 
-    implementation group: 'net.dv8tion', name: 'JDA', version: '5.6.1'
-    implementation group: 'io.sentry', name: 'sentry', version: '7.15.0'
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly libs.junit.platform.launcher
+
+    implementation(libs.discord.jda)
+    implementation(libs.stats.sentry)
 }
 
 test {
     useJUnitPlatform()
-}
-
-tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-}
-
-def isNonStable = { String version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
-}
-
-dependencyUpdates {
-    rejectVersionIf {
-        isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            def releasesRepoUrl = layout.buildDirectory.dir('dist/releases')
-            def snapshotsRepoUrl = layout.buildDirectory.dir('dist/snapshots')
-            url = version.toString().endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-        }
-    }
-    publications {
-        create("maven", MavenPublication) {
-            artifactId = rootProject.name
-            from components.java
-
-            pom {
-                name = project.name
-                description = 'JDA Interaction Tools - JDA interaction made easier'
-
-                url = 'https://github.com/alexpado/jda-interactions-extension'
-
-                licenses {
-                    license {
-                        name = 'Apache License, Version 2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'alexpado'
-                        name = 'Alexandre PADOVAN'
-                        email = 'contact@alexpado.fr'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:github.com/alexpado/jda-interactions-extension.git'
-                    developerConnection = 'scm:git:ssh://github.com/alexpado/jda-interactions-extension.git'
-                    url = 'https://github.com/alexpado/jda-interactions-extension/tree/main'
-                }
-            }
-        }
-    }
-}
-
-signing {
-    sign publishing.publications.maven
-}
-
-tasks.register('zipSnapshot', Zip) {
-    group = 'distribution'
-    description = 'Zips the snapshot artifacts for Maven Central.'
-    from layout.buildDirectory.dir('dist/snapshots')
-    archiveFileName = "snapshot-${project.version}.zip"
-    destinationDirectory = layout.buildDirectory.dir('zips')
-}
-
-tasks.register('zipRelease', Zip) {
-    group = 'distribution'
-    description = 'Zips the release artifacts for Maven Central.'
-    from layout.buildDirectory.dir('dist/releases')
-    archiveFileName = "release-${project.version}.zip"
-    destinationDirectory = layout.buildDirectory.dir('zips')
 }
