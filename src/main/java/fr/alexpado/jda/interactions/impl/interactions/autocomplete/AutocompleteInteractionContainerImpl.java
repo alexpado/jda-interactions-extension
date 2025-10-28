@@ -75,17 +75,17 @@ public class AutocompleteInteractionContainerImpl extends DefaultInteractionCont
     @Override
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
-        if (event.getInteraction() instanceof CommandAutoCompleteInteraction interaction && response instanceof AutoCompleteResponse completion) {
-            event.getTimedAction().action("build", "Building the response");
+        if (event.interaction() instanceof CommandAutoCompleteInteraction interaction && response instanceof AutoCompleteResponse completion) {
+            event.timedAction().action("build", "Building the response");
             List<Command.Choice> choices = completion.getChoices()
                                                      .stream()
                                                      .limit(OptionData.MAX_CHOICES)
                                                      .toList();
-            event.getTimedAction().endAction();
+            event.timedAction().endAction();
 
-            event.getTimedAction().action("replying", "Sending the reply");
+            event.timedAction().action("replying", "Sending the reply");
             interaction.replyChoices(choices).complete();
-            event.getTimedAction().endAction();
+            event.timedAction().endAction();
         }
     }
 }

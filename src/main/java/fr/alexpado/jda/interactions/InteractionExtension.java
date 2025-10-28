@@ -84,17 +84,17 @@ public class InteractionExtension extends ListenerAdapter {
     public void useDefaultMapping() {
 
         for (InteractionContainer<?, ?> container : this.containers.values()) {
-            container.addClassMapping(User.class, (event, opt) -> event.getInteraction()::getUser);
-            container.addClassMapping(Channel.class, (event, opt) -> event.getInteraction()::getChannel);
-            container.addClassMapping(GuildChannel.class, (event, opt) -> event.getInteraction()::getGuildChannel);
-            container.addClassMapping(Guild.class, (event, opt) -> event.getInteraction()::getGuild);
-            container.addClassMapping(ChannelType.class, (event, opt) -> event.getInteraction()::getChannelType);
-            container.addClassMapping(InteractionType.class, (event, opt) -> event.getInteraction()::getType);
-            container.addClassMapping(Member.class, (event, opt) -> event.getInteraction()::getMember);
-            container.addClassMapping(MessageChannel.class, (event, opt) -> event.getInteraction()::getMessageChannel);
-            container.addClassMapping(JDA.class, (event, opt) -> event.getInteraction()::getJDA);
-            container.addClassMapping(Interaction.class, (event, opt) -> event::getInteraction);
-            container.addClassMapping(ITimedAction.class, (event, opt) -> event::getTimedAction);
+            container.addClassMapping(User.class, (event, opt) -> event.interaction()::getUser);
+            container.addClassMapping(Channel.class, (event, opt) -> event.interaction()::getChannel);
+            container.addClassMapping(GuildChannel.class, (event, opt) -> event.interaction()::getGuildChannel);
+            container.addClassMapping(Guild.class, (event, opt) -> event.interaction()::getGuild);
+            container.addClassMapping(ChannelType.class, (event, opt) -> event.interaction()::getChannelType);
+            container.addClassMapping(InteractionType.class, (event, opt) -> event.interaction()::getType);
+            container.addClassMapping(Member.class, (event, opt) -> event.interaction()::getMember);
+            container.addClassMapping(MessageChannel.class, (event, opt) -> event.interaction()::getMessageChannel);
+            container.addClassMapping(JDA.class, (event, opt) -> event.interaction()::getJDA);
+            container.addClassMapping(Interaction.class, (event, opt) -> event::interaction);
+            container.addClassMapping(ITimedAction.class, (event, opt) -> event::timedAction);
         }
     }
 

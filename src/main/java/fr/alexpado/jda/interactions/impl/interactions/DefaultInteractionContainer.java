@@ -59,7 +59,7 @@ public abstract class DefaultInteractionContainer<T extends InteractionTarget<U>
     @Override
     public boolean register(T target) {
 
-        URI uri = this.createURI(target.getMeta().getName());
+        URI uri = this.createURI(target.getMeta().name());
 
         if (this.getInteractions().containsKey(uri)) {
             return false;
@@ -105,18 +105,18 @@ public abstract class DefaultInteractionContainer<T extends InteractionTarget<U>
     @Override
     public Object dispatch(DispatchEvent<U> event) throws Exception {
 
-        event.getTimedAction().action("resolve", "Finding the interaction target");
-        Optional<T> optionalTarget = this.resolve(event.getPath());
+        event.timedAction().action("resolve", "Finding the interaction target");
+        Optional<T> optionalTarget = this.resolve(event.path());
 
         if (optionalTarget.isEmpty()) {
             throw new InteractionNotFoundException(this, event);
         }
-        event.getTimedAction().endAction();
+        event.timedAction().endAction();
 
-        event.getTimedAction().action("execute", "Running the interaction target");
+        event.timedAction().action("execute", "Running the interaction target");
         T      target = optionalTarget.get();
         Object obj    = target.execute(event, this.getMappedClasses());
-        event.getTimedAction().endAction();
+        event.timedAction().endAction();
         return obj;
     }
 

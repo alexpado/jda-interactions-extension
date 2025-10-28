@@ -54,8 +54,8 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
     public boolean register(SlashInteractionTarget target) {
 
         InteractionMeta meta   = target.getMeta();
-        String          name   = meta.getName();
-        String          prefix = Arrays.asList(name.split("/")).get(0);
+        String          name   = meta.name();
+        String          prefix = Arrays.asList(name.split("/")).getFirst();
 
         InteractionCommandData data = this.dataMap.getOrDefault(prefix, new InteractionCommandData(prefix, meta));
         data.register(meta);
@@ -140,23 +140,23 @@ public class SlashInteractionContainerImpl extends DefaultInteractionContainer<S
     @Override
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
-        if (event.getInteraction() instanceof IReplyCallback callback && response instanceof SlashResponse slashResponse) {
+        if (event.interaction() instanceof IReplyCallback callback && response instanceof SlashResponse slashResponse) {
             if (callback.isAcknowledged()) {
-                event.getTimedAction().action("build", "Building the response");
+                event.timedAction().action("build", "Building the response");
                 MessageEditBuilder builder = this.getMessageEditBuilder(slashResponse);
-                event.getTimedAction().endAction();
+                event.timedAction().endAction();
 
-                event.getTimedAction().action("reply", "Replying to the interaction (EDIT)");
+                event.timedAction().action("reply", "Replying to the interaction (EDIT)");
                 callback.getHook().editOriginal(builder.build()).complete();
-                event.getTimedAction().endAction();
+                event.timedAction().endAction();
             } else {
-                event.getTimedAction().action("build", "Building the response");
+                event.timedAction().action("build", "Building the response");
                 MessageCreateBuilder builder = this.getMessageCreateBuilder(slashResponse);
-                event.getTimedAction().endAction();
+                event.timedAction().endAction();
 
-                event.getTimedAction().action("reply", "Replying to the interaction (CREATE)");
+                event.timedAction().action("reply", "Replying to the interaction (CREATE)");
                 callback.reply(builder.build()).setEphemeral(slashResponse.isEphemeral()).complete();
-                event.getTimedAction().endAction();
+                event.timedAction().endAction();
             }
         }
     }

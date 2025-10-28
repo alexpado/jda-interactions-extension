@@ -74,16 +74,16 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
      *         result handler.
      *
      * @throws Exception
-     *         If the execution could not occur, or due to an userland exception defined in the interaction.
+     *         If the execution could not occur, or due to a userland exception defined in the interaction.
      * @see InteractionResponseHandler
      */
     @Override
     public Object execute(DispatchEvent<T> event, Map<Class<?>, Injection<DispatchEvent<T>, ?>> mapping) throws Exception {
 
         if (this.getMeta().isDeferred()) {
-            event.getTimedAction().action("deferring", "Deferring the interaction");
+            event.timedAction().action("deferring", "Deferring the interaction");
             boolean     reply       = this.getMeta().shouldReply();
-            Interaction interaction = event.getInteraction();
+            Interaction interaction = event.interaction();
 
             if (reply && interaction instanceof IReplyCallback callback) {
                 callback.deferReply(this.getMeta().isHidden()).complete();
@@ -92,14 +92,14 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
             } else {
                 throw new UnsupportedOperationException("Couldn't pre-handle deferred request");
             }
-            event.getTimedAction().endAction();
+            event.timedAction().endAction();
         }
 
-        event.getTimedAction().action("injection", "Injecting parameters");
+        event.timedAction().action("injection", "Injecting parameters");
         Collection<Object> callParameters = new ArrayList<>();
 
         for (Parameter parameter : this.method.getParameters()) {
-            event.getTimedAction().action("param", "Injecting " + parameter.getName());
+            event.timedAction().action("param", "Injecting " + parameter.getName());
             String  name        = parameter.getName();
             String  type        = parameter.getType().getSimpleName();
             boolean isOption    = parameter.isAnnotationPresent(Param.class);
@@ -112,7 +112,7 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
 
             if (isOption) {
                 Param  param = parameter.getAnnotation(Param.class);
-                Object obj   = event.getOptions().get(param.value());
+                Object obj   = event.options().get(param.value());
 
                 if (!this.canMap(parameter, obj) && isInjection) { // Special case where the injection is used as converter
                     Injection<DispatchEvent<T>, ?> injection = mapping.get(parameter.getType());
@@ -139,21 +139,21 @@ public class InteractionTargetImpl<T extends Interaction> implements Interaction
                 throw new InteractionDeclarationException(
                         this.instance.getClass(),
                         this.method,
-                        this.meta.getName(),
+                        this.meta.name(),
                         "Unmapped parameter " + type
                 );
             }
 
             this.checkMapping(parameter, parameterInput);
             callParameters.add(parameterInput);
-            event.getTimedAction().endAction();
+            event.timedAction().endAction();
         }
-        event.getTimedAction().endAction();
+        event.timedAction().endAction();
 
         try {
-            event.getTimedAction().action("invoke", "Running the interaction");
+            event.timedAction().action("invoke", "Running the interaction");
             Object result = this.method.invoke(this.instance, callParameters.toArray(Object[]::new));
-            event.getTimedAction().endAction();
+            event.timedAction().endAction();
             return result;
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof Exception ex) {

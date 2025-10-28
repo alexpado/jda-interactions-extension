@@ -54,11 +54,13 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
     public Optional<ButtonInteractionTarget> resolve(URI uri) {
 
         try {
-            URI raw = new URI(uri.getScheme(),
+            URI raw = new URI(
+                    uri.getScheme(),
                     uri.getAuthority(),
                     uri.getPath(),
                     null, // Ignore the query part of the input url
-                    uri.getFragment());
+                    uri.getFragment()
+            );
 
             return super.resolve(raw);
         } catch (URISyntaxException e) {
@@ -77,29 +79,29 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
     @Override
     public Object dispatch(DispatchEvent<ButtonInteraction> event) throws Exception {
 
-        event.getTimedAction().action("resolve", "Finding the interaction target");
-        Optional<ButtonInteractionTarget> optionalTarget = this.resolve(event.getPath());
+        event.timedAction().action("resolve", "Finding the interaction target");
+        Optional<ButtonInteractionTarget> optionalTarget = this.resolve(event.path());
 
         if (optionalTarget.isEmpty()) {
             throw new InteractionNotFoundException(this, event);
         }
-        event.getTimedAction().endAction();
+        event.timedAction().endAction();
 
         ButtonInteractionTarget target = optionalTarget.get();
 
         // Build Options
-        event.getTimedAction().action("convert", "Converting URI to interaction options");
+        event.timedAction().action("convert", "Converting URI to interaction options");
         Map<String, String> query = new HashMap<>();
 
-        if (event.getPath().getQuery() != null) {
-            String[] options = event.getPath().getQuery().split("&");
+        if (event.path().getQuery() != null) {
+            String[] options = event.path().getQuery().split("&");
             for (String option : options) {
                 String[] parts = option.split("=");
                 query.put(parts[0], parts[1]);
             }
         }
 
-        for (OptionMeta option : target.getMeta().getOptions()) {
+        for (OptionMeta option : target.getMeta().options()) {
             String name  = option.getName();
             String value = query.get(name);
 
@@ -107,44 +109,44 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
                 if (option.isRequired()) {
                     throw new IllegalStateException(String.format("Option %s is required.", name));
                 }
-                event.getOptions().put(name, null);
+                event.options().put(name, null);
                 continue;
             }
 
             switch (option.getType()) {
-                case STRING -> event.getOptions().put(name, value);
-                case INTEGER -> event.getOptions().put(name, Long.parseLong(value));
-                case BOOLEAN -> event.getOptions().put(name, Boolean.parseBoolean(value));
+                case STRING -> event.options().put(name, value);
+                case INTEGER -> event.options().put(name, Long.parseLong(value));
+                case BOOLEAN -> event.options().put(name, Boolean.parseBoolean(value));
                 case USER -> {
                     long id = Long.parseLong(value);
-                    event.getOptions().put(name, event.getInteraction().getJDA().getUserById(id));
+                    event.options().put(name, event.interaction().getJDA().getUserById(id));
                 }
                 case CHANNEL -> {
                     long  id    = Long.parseLong(value);
-                    Guild guild = event.getInteraction().getGuild();
+                    Guild guild = event.interaction().getGuild();
                     if (null == guild) {
                         throw new IllegalStateException("Cannot load guild in a private channel context.");
                     }
-                    event.getOptions().put(name, guild.getGuildChannelById(id));
+                    event.options().put(name, guild.getGuildChannelById(id));
                 }
                 case ROLE -> {
                     long  id    = Long.parseLong(value);
-                    Guild guild = event.getInteraction().getGuild();
+                    Guild guild = event.interaction().getGuild();
                     if (null == guild) {
                         throw new IllegalStateException("Cannot load guild in a private channel context.");
                     }
-                    event.getOptions().put(name, guild.getRoleById(id));
+                    event.options().put(name, guild.getRoleById(id));
                 }
-                case NUMBER -> event.getOptions().put(name, Double.parseDouble(value));
+                case NUMBER -> event.options().put(name, Double.parseDouble(value));
                 default -> // Unsupported option through URI
-                        event.getOptions().put(name, null);
+                        event.options().put(name, null);
             }
         }
-        event.getTimedAction().endAction();
+        event.timedAction().endAction();
 
-        event.getTimedAction().action("execute", "Running the interaction target");
+        event.timedAction().action("execute", "Running the interaction target");
         Object obj = target.execute(event, this.getMappedClasses());
-        event.getTimedAction().endAction();
+        event.timedAction().endAction();
         return obj;
     }
 
@@ -192,22 +194,33 @@ public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<
     @Override
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
-        if (event.getInteraction() instanceof ButtonInteraction callback && response instanceof ButtonResponse buttonResponse) {
+        if (event.interaction() instanceof ButtonInteraction callback && response instanceof ButtonResponse buttonResponse) {
             if (callback.isAcknowledged()) {
-                this.doResponseHandling(event.getTimedAction(), buttonResponse, (builder) -> {
-                    callback.getHook().editOriginal(builder.build()).complete();
-                }, (builder) -> {
-                    callback.getHook()
-                            .sendMessage(builder.build())
-                            .setEphemeral(buttonResponse.isEphemeral())
-                            .complete();
-                });
+                this.doResponseHandling(
+                        event.timedAction(),
+                        buttonResponse,
+                        builder -> callback
+                                .getHook()
+                                .editOriginal(builder.build())
+                                .complete(),
+                        builder -> callback
+                                .getHook()
+                                .sendMessage(builder.build())
+                                .setEphemeral(buttonResponse.isEphemeral())
+                                .complete()
+                );
             } else {
-                this.doResponseHandling(event.getTimedAction(), buttonResponse, (builder) -> {
-                    callback.editMessage(builder.build()).complete();
-                }, (builder) -> {
-                    callback.reply(builder.build()).setEphemeral(buttonResponse.isEphemeral()).complete();
-                });
+                this.doResponseHandling(
+                        event.timedAction(),
+                        buttonResponse,
+                        builder -> callback
+                                .editMessage(builder.build())
+                                .complete(),
+                        builder -> callback
+                                .reply(builder.build())
+                                .setEphemeral(buttonResponse.isEphemeral())
+                                .complete()
+                );
             }
         }
     }

@@ -11,15 +11,15 @@ import java.util.List;
 /**
  * Class version of the annotation {@link Interact}.
  */
-public class InteractionMeta {
-
-    private final String           name;
-    private final String           description;
-    private final SlashTarget      target;
-    private final List<OptionMeta> options;
-    private final boolean          hide;
-    private final boolean          defer;
-    private final boolean          reply;
+public record InteractionMeta(
+        String name,
+        String description,
+        SlashTarget target,
+        List<OptionMeta> options,
+        boolean hide,
+        boolean defer,
+        boolean reply
+) {
 
     /**
      * Create a new {@link InteractionMeta}.
@@ -41,15 +41,8 @@ public class InteractionMeta {
      * @param reply
      *         Define if the response will create a new message or edit the original.
      */
-    public InteractionMeta(String name, String description, SlashTarget target, List<OptionMeta> options, boolean hide, boolean defer, boolean reply) {
+    public InteractionMeta {
 
-        this.name        = name;
-        this.description = description;
-        this.target      = target;
-        this.options     = options;
-        this.hide        = hide;
-        this.defer       = defer;
-        this.reply       = reply;
     }
 
     /**
@@ -57,7 +50,8 @@ public class InteractionMeta {
      *
      * @return The name
      */
-    public String getName() {
+    @Override
+    public String name() {
 
         return this.name;
     }
@@ -67,7 +61,8 @@ public class InteractionMeta {
      *
      * @return The description
      */
-    public String getDescription() {
+    @Override
+    public String description() {
 
         return this.description;
     }
@@ -77,7 +72,8 @@ public class InteractionMeta {
      *
      * @return A {@link SlashTarget}
      */
-    public SlashTarget getTarget() {
+    @Override
+    public SlashTarget target() {
 
         return this.target;
     }
@@ -87,7 +83,8 @@ public class InteractionMeta {
      *
      * @return A {@link OptionMeta} list
      */
-    public List<OptionMeta> getOptions() {
+    @Override
+    public List<OptionMeta> options() {
 
         return this.options;
     }

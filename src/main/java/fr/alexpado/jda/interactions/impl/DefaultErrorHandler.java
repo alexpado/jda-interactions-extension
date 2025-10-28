@@ -25,7 +25,7 @@ public class DefaultErrorHandler implements InteractionErrorHandler {
     @Override
     public <T extends Interaction> void handleException(DispatchEvent<T> event, Exception exception) {
 
-        if (event.getInteraction() instanceof IReplyCallback callback) {
+        if (event.interaction() instanceof IReplyCallback callback) {
             if (exception instanceof DiscordEmbeddable embeddable) {
                 EmbedBuilder builder = embeddable.asEmbed();
                 this.answer(callback, builder.build(), !embeddable.showToEveryone());
@@ -52,7 +52,7 @@ public class DefaultErrorHandler implements InteractionErrorHandler {
     @Override
     public <T extends Interaction> void onNoResponseHandlerFound(DispatchEvent<T> event, Object response) {
 
-        if (event.getInteraction() instanceof IReplyCallback callback) {
+        if (event.interaction() instanceof IReplyCallback callback) {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Unable to find a response handler");
             builder.setDescription("Your interaction has been executed, but the response generated from the interaction target could not be handled.\n");

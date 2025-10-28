@@ -30,7 +30,7 @@ public class InteractionGroupData extends SubcommandGroupData {
      */
     public InteractionGroupData(@NotNull String name, @NotNull InteractionMeta meta) {
 
-        super(name, meta.getDescription());
+        super(name, meta.description());
     }
 
     /**
@@ -55,11 +55,11 @@ public class InteractionGroupData extends SubcommandGroupData {
      */
     public void register(InteractionMeta meta) {
 
-        List<String> path = Arrays.asList(meta.getName().split("/"));
+        List<String> path = Arrays.asList(meta.name().split("/"));
 
         // Nesting checks
         if (path.size() > 3 || path.size() == 2) {
-            throw new IllegalStateException(String.format("Invalid nesting for %s", meta.getName()));
+            throw new IllegalStateException(String.format("Invalid nesting for %s", meta.name()));
         }
 
         if (path.size() == 3) {

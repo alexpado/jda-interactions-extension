@@ -58,13 +58,13 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
     @Override
     public AutoCompleteResponse execute(DispatchEvent<CommandAutoCompleteInteraction> event, Map<Class<?>, Injection<DispatchEvent<CommandAutoCompleteInteraction>, ?>> mapping) {
 
-        CommandAutoCompleteInteraction interaction = event.getInteraction();
+        CommandAutoCompleteInteraction interaction = event.interaction();
         AutoCompleteQuery              focused     = interaction.getFocusedOption();
 
         String name  = focused.getName();
         String value = focused.getValue();
 
-        Optional<OptionMeta> optionalOptionMeta = this.meta.getOptions().stream()
+        Optional<OptionMeta> optionalOptionMeta = this.meta.options().stream()
                                                            .filter(option -> option.getName().equals(name))
                                                            .findFirst();
 
@@ -74,16 +74,13 @@ public class AutocompleteInteractionTargetImpl implements AutocompleteInteractio
             return () -> this.completionProviders.get(completionName).complete(event, name, completionName, value);
         }
 
-        if (optionalOptionMeta.isEmpty()) {
-            return Collections::emptyList;
-        }
+        return optionalOptionMeta.<AutoCompleteResponse>map(optionMeta -> () -> optionMeta
+                .getChoices()
+                .stream()
+                .filter(choice -> choice.contains(value))
+                .map(ChoiceMeta::asChoice)
+                .toList()).orElseGet(() -> Collections::emptyList);
 
-        return () -> optionalOptionMeta.get()
-                                       .getChoices()
-                                       .stream()
-                                       .filter(choice -> choice.contains(value))
-                                       .map(ChoiceMeta::asChoice)
-                                       .toList();
     }
 
     /**

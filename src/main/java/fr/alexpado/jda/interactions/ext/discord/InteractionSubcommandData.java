@@ -22,8 +22,8 @@ public class InteractionSubcommandData extends SubcommandData {
      */
     public InteractionSubcommandData(@NotNull String name, @NotNull InteractionMeta meta) {
 
-        super(name, meta.getDescription());
-        this.addOptions(meta.getOptions().stream().map(OptionMeta::createOptionData).toList());
+        super(name, meta.description());
+        this.addOptions(meta.options().stream().map(OptionMeta::createOptionData).toList());
     }
 
 }

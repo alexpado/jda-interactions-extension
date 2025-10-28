@@ -31,7 +31,7 @@ public class InteractionCommandData extends CommandDataImpl {
      */
     public InteractionCommandData(@NotNull String name, @NotNull InteractionMeta meta) {
 
-        super(name, meta.getDescription());
+        super(name, meta.description());
     }
 
     /**
@@ -61,18 +61,18 @@ public class InteractionCommandData extends CommandDataImpl {
      */
     public void register(InteractionMeta meta) {
 
-        List<String> path = Arrays.asList(meta.getName().split("/"));
+        List<String> path = Arrays.asList(meta.name().split("/"));
 
         boolean isOverflowing    = path.size() > 3;
         boolean hasGroupError    = path.size() == 2 && !this.groups.isEmpty();
         boolean hasSubGroupError = path.size() == 3 && !this.subCommands.isEmpty();
 
         if (isOverflowing || hasGroupError || hasSubGroupError) {
-            throw new IllegalStateException(String.format("Invalid nesting for %s", meta.getName()));
+            throw new IllegalStateException(String.format("Invalid nesting for %s", meta.name()));
         }
 
         if (path.size() == 1) {
-            this.addOptions(meta.getOptions().stream().map(OptionMeta::createOptionData).toList());
+            this.addOptions(meta.options().stream().map(OptionMeta::createOptionData).toList());
         } else if (path.size() == 2) {
             String                    name = path.get(1);
             InteractionSubcommandData data = this.subCommands.getOrDefault(name, new InteractionSubcommandData(name, meta));

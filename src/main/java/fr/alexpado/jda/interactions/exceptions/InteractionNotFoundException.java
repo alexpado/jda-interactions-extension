@@ -32,8 +32,8 @@ public class InteractionNotFoundException extends RuntimeException implements Di
      */
     public <T extends Interaction> InteractionNotFoundException(InteractionContainer<?, T> container, DispatchEvent<T> event) {
 
-        super(String.format("Interaction '%s' not found in container '%s'", event.getPath(), container.getClass()
-                .getName()));
+        super(String.format("Interaction '%s' not found in container '%s'", event.path(), container.getClass()
+                                                                                                   .getName()));
         this.container = container;
         this.event     = event;
     }
@@ -70,10 +70,10 @@ public class InteractionNotFoundException extends RuntimeException implements Di
         builder.setTitle("Unable to find the requested interaction");
         builder.setDescription("Please check your declaration and make sure that you registered your interaction target.");
 
-        builder.addField("URI", "`%s`".formatted(this.event.getPath()), false);
-        builder.addField("Context", this.event.getInteraction().getClass().getSimpleName(), false);
+        builder.addField("URI", "`%s`".formatted(this.event.path()), false);
+        builder.addField("Context", this.event.interaction().getClass().getSimpleName(), false);
         builder.addField("Container", this.container.getClass().getSimpleName(), false);
-        builder.addField("Options", String.valueOf(this.event.getOptions().size()), false);
+        builder.addField("Options", String.valueOf(this.event.options().size()), false);
 
         return builder;
     }

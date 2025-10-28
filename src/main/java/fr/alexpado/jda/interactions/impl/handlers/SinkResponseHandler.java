@@ -52,11 +52,11 @@ public class SinkResponseHandler implements InteractionResponseHandler {
     @Override
     public <T extends Interaction> void handleResponse(DispatchEvent<T> event, @Nullable Object response) {
 
-        if (event.getInteraction() instanceof SlashCommandInteraction slash) {
+        if (event.interaction() instanceof SlashCommandInteraction slash) {
             this.answer(slash, data -> data.setContent("*Nothing to display*"));
-        } else if (event.getInteraction() instanceof ButtonInteraction button) {
+        } else if (event.interaction() instanceof ButtonInteraction button) {
             this.acknowledgeButton(button);
-        } else if (event.getInteraction() instanceof CommandAutoCompleteInteraction auto) {
+        } else if (event.interaction() instanceof CommandAutoCompleteInteraction auto) {
             this.acknowledgeAutocomplete(auto);
         }
     }

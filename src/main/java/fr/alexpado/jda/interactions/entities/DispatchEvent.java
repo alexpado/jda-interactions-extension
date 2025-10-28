@@ -16,12 +16,12 @@ import java.util.Map;
  * @param <T>
  *         The type of the {@link Interaction}.
  */
-public class DispatchEvent<T extends Interaction> {
-
-    private final ITimedAction        timedAction;
-    private final URI                 path;
-    private final T                   interaction;
-    private final Map<String, Object> options;
+public record DispatchEvent<T extends Interaction>(
+        ITimedAction timedAction,
+        URI path,
+        T interaction,
+        Map<String, Object> options
+) {
 
     /**
      * Create a new {@link DispatchEvent} with the provided path and {@link Interaction}.
@@ -50,12 +50,8 @@ public class DispatchEvent<T extends Interaction> {
      * @param options
      *         The additional options to use when executing the {@link InteractionTarget}.
      */
-    public DispatchEvent(ITimedAction timedAction, URI path, T interaction, Map<String, Object> options) {
+    public DispatchEvent {
 
-        this.timedAction = timedAction;
-        this.path        = path;
-        this.interaction = interaction;
-        this.options     = options;
     }
 
     /**
@@ -63,7 +59,8 @@ public class DispatchEvent<T extends Interaction> {
      *
      * @return An {@link ITimedAction}
      */
-    public ITimedAction getTimedAction() {
+    @Override
+    public ITimedAction timedAction() {
 
         return this.timedAction;
     }
@@ -73,7 +70,8 @@ public class DispatchEvent<T extends Interaction> {
      *
      * @return An {@link URI}.
      */
-    public URI getPath() {
+    @Override
+    public URI path() {
 
         return this.path;
     }
@@ -83,7 +81,8 @@ public class DispatchEvent<T extends Interaction> {
      *
      * @return An {@link Interaction}.
      */
-    public T getInteraction() {
+    @Override
+    public T interaction() {
 
         return this.interaction;
     }
@@ -93,7 +92,8 @@ public class DispatchEvent<T extends Interaction> {
      *
      * @return A possibly empty {@link Map}
      */
-    public Map<String, Object> getOptions() {
+    @Override
+    public Map<String, Object> options() {
 
         return this.options;
     }
