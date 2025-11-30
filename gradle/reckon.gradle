@@ -1,6 +1,6 @@
 reckon {
     defaultInferredScope = 'patch'
-    snapshots()
+    stages('beta', 'rc', 'release')
     scopeCalc = calcScopeFromProp() | calcScopeFromCommitMessages()
     stageCalc = calcStageFromProp()
 }

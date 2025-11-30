@@ -3,7 +3,9 @@ publishing {
         maven {
             def releasesRepoUrl = layout.buildDirectory.dir('dist/releases')
             def snapshotsRepoUrl = layout.buildDirectory.dir('dist/snapshots')
-            url = version.toString().endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+            def isStable = version.toString() ==~ /^[0-9]+(\.[0-9]+)*$/
+            url = isStable ? releasesRepoUrl : snapshotsRepoUrl
         }
     }
     publications {
