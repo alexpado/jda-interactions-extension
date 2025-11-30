@@ -11,9 +11,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A self-contained {@link RouteResolver} that manages Button interactions using annotations.
@@ -27,8 +25,12 @@ public class ButtonRouteResolver implements RouteResolver {
      *
      * @param controller
      *         The object to scan.
+     *
+     * @return A {@link List} of registered {@link Endpoint}.
      */
-    public void registerController(Object controller) {
+    public List<Endpoint<ButtonInteraction>> registerController(Object controller) {
+
+        List<Endpoint<ButtonInteraction>> endpoints = new ArrayList<>();
 
         for (Method method : controller.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(Button.class)) {
@@ -41,9 +43,12 @@ public class ButtonRouteResolver implements RouteResolver {
                         ButtonInteraction.class
                 );
 
+                endpoints.add(endpoint);
                 this.endpoints.put(uri, endpoint);
             }
         }
+
+        return endpoints;
     }
 
     @Override

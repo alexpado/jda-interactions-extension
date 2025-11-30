@@ -47,14 +47,20 @@ public class SlashRouteResolver implements RouteResolver {
      *
      * @param controller
      *         The object to scan.
+     *
+     * @return A {@link List} of registered {@link Endpoint}.
      */
-    public void registerController(Object controller) {
+    public List<Endpoint<?>> registerController(Object controller) {
+
+        List<Endpoint<?>> endpoints = new ArrayList<>();
 
         for (Method method : controller.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(Slash.class)) {
-                this.registerSlashMethod(controller, method);
+                endpoints.addAll(this.registerSlashMethod(controller, method));
             }
         }
+
+        return endpoints;
     }
 
     /**
@@ -87,7 +93,9 @@ public class SlashRouteResolver implements RouteResolver {
         return Optional.empty();
     }
 
-    private void registerSlashMethod(Object controller, Method method) {
+    private List<Endpoint<?>> registerSlashMethod(Object controller, Method method) {
+
+        List<Endpoint<?>> endpoints = new ArrayList<>();
 
         Slash  slash = method.getAnnotation(Slash.class);
         String path  = slash.name();
@@ -100,18 +108,21 @@ public class SlashRouteResolver implements RouteResolver {
                 SlashCommandInteraction.class
         );
 
+        endpoints.add(endpoint);
+
         this.slashEndpoints.put(uri, endpoint);
 
         for (Option option : slash.options()) {
             if (this.isAutocomplete(option)) {
-                this.registerCompletionRoute(path, option);
+                endpoints.add(this.registerCompletionRoute(path, option));
             }
         }
 
         this.addCommandDefinition(slash);
+        return endpoints;
     }
 
-    private void registerCompletionRoute(String commandPath, Option option) {
+    private Endpoint<CommandAutoCompleteInteraction> registerCompletionRoute(String commandPath, Option option) {
 
         URI completionUri = URI.create("completion://" + commandPath + "/" + option.name());
 
@@ -121,7 +132,8 @@ public class SlashRouteResolver implements RouteResolver {
         CompletionProvider provider = null;
 
         if (completion.choices().length > 0) {
-            provider = (_) -> Stream.of(completion.choices()).map(choice -> new Command.Choice(choice.label(), choice.value()));
+            provider = (_) -> Stream.of(completion.choices())
+                                    .map(choice -> new Command.Choice(choice.label(), choice.value()));
         }
 
         if (!completion.named().isBlank()) {
@@ -148,10 +160,14 @@ public class SlashRouteResolver implements RouteResolver {
             ));
         }
 
-        this.completionEndpoints.put(
-                completionUri,
-                new Endpoint<>(route, new CompletionRouteHandler(provider), CommandAutoCompleteInteraction.class)
+        Endpoint<CommandAutoCompleteInteraction> endpoint = new Endpoint<>(
+                route,
+                new CompletionRouteHandler(provider),
+                CommandAutoCompleteInteraction.class
         );
+
+        this.completionEndpoints.put(completionUri, endpoint);
+        return endpoint;
     }
 
     //region JDA Stuff
