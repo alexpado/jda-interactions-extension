@@ -21,6 +21,10 @@ public class CompletionRouteHandler implements RouteHandler<CommandAutoCompleteI
     @Override
     public Object handle(@NotNull Request<CommandAutoCompleteInteraction> request) {
 
+        if (this.provider.isFiltered()) {
+            return this.provider.complete(request).toList();
+        }
+
         String            current  = request.getEvent().getFocusedOption().getValue();
         Predicate<String> contains = str -> str.toLowerCase().contains(current.toLowerCase());
 
