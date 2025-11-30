@@ -7,6 +7,7 @@ publishing {
             def isStable = version.toString() ==~ /^[0-9]+(\.[0-9]+)*$/
             url = isStable ? releasesRepoUrl : snapshotsRepoUrl
         }
+        mavenLocal()
     }
     publications {
         create("maven", MavenPublication) {
