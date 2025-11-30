@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * Handles {@link CommandAutoCompleteInteraction}.
  * <p>
- * Routes to {@code completion://full/command/path?option=focusedOptionName}.
+ * Routes to {@code completion://full/command/path/option}.
  */
 public class AutocompleteSchemeAdapter implements SchemeAdapter<CommandAutoCompleteInteraction> {
 

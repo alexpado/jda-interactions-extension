@@ -10,46 +10,62 @@ import java.lang.annotation.Target;
  * Defines an option for a {@link Slash} command.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({}) // Only used inside @Slash or other annotations, not on methods directly
+@Target({})
 public @interface Option {
 
+    /**
+     * Define this {@link Option}'s name.
+     */
     String name();
 
+    /**
+     * Define this {@link Option}'s description.
+     */
     String description();
 
+    /**
+     * Define this {@link Option}'s {@link OptionType}.
+     */
     OptionType type();
 
+    /**
+     * Define if this {@link Option} is required.
+     */
     boolean required() default false;
 
+    /**
+     * Define this {@link Option}'s completion settings.
+     */
     Completion completion() default @Completion;
 
     /**
-     * Minimum value for {@link OptionType#INTEGER}.
+     * Define this {@link Option}'s minimal value allowed when the type is of {@link OptionType#INTEGER}.
      */
     long minInt() default Long.MIN_VALUE;
 
+
     /**
-     * Maximum value for {@link OptionType#INTEGER}.
+     * Define this {@link Option}'s maximal value allowed when the type is of {@link OptionType#INTEGER}.
      */
     long maxInt() default Long.MAX_VALUE;
 
     /**
-     * Minimum value for {@link OptionType#NUMBER}.
+     * Define this {@link Option}'s minimal value allowed when the type is of {@link OptionType#NUMBER}.
      */
     double minNum() default Double.NEGATIVE_INFINITY;
 
     /**
-     * Maximum value for {@link OptionType#NUMBER}.
+     * Define this {@link Option}'s maximal value allowed when the type is of {@link OptionType#NUMBER}.
      */
     double maxNum() default Double.POSITIVE_INFINITY;
 
     /**
-     * Minimum length for {@link OptionType#STRING}.
+     * Define this {@link Option}'s minimal length allowed when the type is of {@link OptionType#STRING}.
      */
     int minLength() default -1;
 
     /**
-     * Maximum length for {@link OptionType#STRING}.
+     * Define this {@link Option}'s maximum length allowed when the type is of {@link OptionType#STRING}.
      */
     int maxLength() default -1;
 

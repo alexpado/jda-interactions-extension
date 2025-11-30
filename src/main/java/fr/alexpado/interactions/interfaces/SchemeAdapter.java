@@ -20,6 +20,14 @@ import java.util.Optional;
  */
 public interface SchemeAdapter<T extends Interaction> {
 
+    /**
+     * Add most common attachments to the {@link Request}. This method will use the {@link Request#getEvent()} to add
+     * commons entities to the attachment map. More specific attachments should be handled at the {@link SchemeAdapter}
+     * implementation level.
+     *
+     * @param request
+     *         The {@link Request} for which the attachment map should be built.
+     */
     static void buildAttachments(Request<?> request) {
 
         Interaction event = request.getEvent();

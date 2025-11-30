@@ -35,6 +35,16 @@ public interface DeferrableRoute extends Route {
         return false;
     }
 
+    /**
+     * Create a {@link DeferrableRoute} based on the provided {@link Method}.
+     *
+     * @param uri
+     *         The route's {@link URI}.
+     * @param method
+     *         The target {@link Method} for the route.
+     *
+     * @return A {@link DeferrableRoute}.
+     */
     static DeferrableRoute of(URI uri, Method method) {
 
         boolean defer     = false;
