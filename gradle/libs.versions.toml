@@ -1,6 +1,7 @@
 [versions]
 jda = "6.1.0"
 junitBom = "6.0.0"
+mockito = "5.20.0"
 reckon = "1.0.1"
 sentry = "8.24.0"
 versionCatalogUpdatePlugin = "1.0.1"
@@ -9,7 +10,9 @@ versionCatalogUpdatePlugin = "1.0.1"
 discord-jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+junit-platformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
+mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+mockito-inline = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 stats-sentry = { module = "io.sentry:sentry", version.ref = "sentry" }
 
 [plugins]
