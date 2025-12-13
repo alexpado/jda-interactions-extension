@@ -53,6 +53,16 @@ public class ReflectiveRouteHandler<T extends Interaction> implements RouteHandl
         this.method   = method;
     }
 
+    /**
+     * Retrieve the {@link Method} targeted by this {@link ReflectiveRouteHandler}
+     *
+     * @return A {@link Method}
+     */
+    public Method getMethod() {
+
+        return this.method;
+    }
+
     @Override
     public @NotNull Object handle(@NotNull Request<T> request) {
 
