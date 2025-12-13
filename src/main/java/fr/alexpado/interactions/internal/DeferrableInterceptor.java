@@ -4,6 +4,7 @@ import fr.alexpado.interactions.interfaces.routing.DeferrableRoute;
 import fr.alexpado.interactions.interfaces.routing.Interceptor;
 import fr.alexpado.interactions.interfaces.routing.Request;
 import fr.alexpado.interactions.interfaces.routing.Route;
+import fr.alexpado.interactions.structure.Endpoint;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +21,9 @@ import java.util.Optional;
 public class DeferrableInterceptor implements Interceptor {
 
     @Override
-    public Optional<Object> preHandle(@NotNull Route route, @NotNull Request<?> request) {
+    public Optional<Object> preHandle(@NotNull Endpoint<?> endpoint, @NotNull Request<?> request) {
+
+        Route route = endpoint.route();
 
         if (route instanceof DeferrableRoute deferrableRoute && request.getEvent() instanceof IReplyCallback callback) {
             if (deferrableRoute.isDeferred()) {

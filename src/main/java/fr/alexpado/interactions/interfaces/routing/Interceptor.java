@@ -1,6 +1,7 @@
 package fr.alexpado.interactions.interfaces.routing;
 
 import fr.alexpado.interactions.interfaces.handlers.RouteHandler;
+import fr.alexpado.interactions.structure.Endpoint;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -16,8 +17,8 @@ public interface Interceptor {
     /**
      * Intercepts the request before it is passed to the {@link RouteHandler}.
      *
-     * @param route
-     *         The route that will handle the request.
+     * @param endpoint
+     *         The endpoint that will handle the request.
      * @param request
      *         The incoming interaction request.
      *
@@ -25,7 +26,7 @@ public interface Interceptor {
      *         handler will not be called, and the value will be passed directly to the result handling stage. If the
      *         optional is empty, execution proceeds normally.
      */
-    default Optional<Object> preHandle(@NotNull Route route, @NotNull Request<?> request) {
+    default Optional<Object> preHandle(@NotNull Endpoint<?> endpoint, @NotNull Request<?> request) {
 
         return Optional.empty();
     }
@@ -33,8 +34,8 @@ public interface Interceptor {
     /**
      * Intercepts the request after the {@link RouteHandler} has finished execution, but before the result is handled.
      *
-     * @param route
-     *         The route that handled the request.
+     * @param endpoint
+     *         The endpoint that will handle the request.
      * @param request
      *         The interaction request.
      * @param result
@@ -43,7 +44,7 @@ public interface Interceptor {
      * @return An {@link Optional} containing a new result object to replace the one returned by the handler. If the
      *         optional is empty, the original result is used.
      */
-    default Optional<Object> postHandle(@NotNull Route route, @NotNull Request<?> request, @NotNull Object result) {
+    default Optional<Object> postHandle(@NotNull Endpoint<?> endpoint, @NotNull Request<?> request, @NotNull Object result) {
 
         return Optional.empty();
     }

@@ -8,6 +8,7 @@ import fr.alexpado.interactions.interfaces.routing.Interceptor;
 import fr.alexpado.interactions.interfaces.routing.Request;
 import fr.alexpado.interactions.interfaces.routing.Route;
 import fr.alexpado.interactions.interfaces.routing.RouteResolver;
+import fr.alexpado.interactions.structure.Endpoint;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,10 +38,18 @@ public class InteractionRouterTests {
     @Mock
     private RouteResolver                              fallbackResolver;
 
+    private Endpoint<SlashCommandInteractionEvent> endpoint;
+
     private final URI testUri = URI.create("slash://test/command");
 
     @BeforeEach
     void setUp() {
+
+        this.endpoint = new Endpoint<>(
+                this.route,
+                this.slashHandler,
+                SlashCommandInteractionEvent.class
+        );
 
         this.router = new InteractionRouter();
         lenient().when(this.route.getUri()).thenReturn(this.testUri);
@@ -92,7 +101,7 @@ public class InteractionRouterTests {
     void dispatch_shouldShortCircuit_onPreHandle() {
         // Arrange
         Interceptor interceptor = mock(Interceptor.class);
-        when(interceptor.preHandle(this.route, this.slashRequest)).thenReturn(Optional.of("Intercepted"));
+        when(interceptor.preHandle(this.endpoint, this.slashRequest)).thenReturn(Optional.of("Intercepted"));
         this.router.registerRoute(this.route, SlashCommandInteractionEvent.class, this.slashHandler);
         this.router.registerInterceptor(interceptor);
 
@@ -110,7 +119,7 @@ public class InteractionRouterTests {
         // Arrange
         Interceptor interceptor = mock(Interceptor.class);
         when(this.slashHandler.handle(this.slashRequest)).thenReturn("Original");
-        when(interceptor.postHandle(this.route, this.slashRequest, "Original")).thenReturn(Optional.of("Modified"));
+        when(interceptor.postHandle(this.endpoint, this.slashRequest, "Original")).thenReturn(Optional.of("Modified"));
         this.router.registerRoute(this.route, SlashCommandInteractionEvent.class, this.slashHandler);
         this.router.registerInterceptor(interceptor);
 

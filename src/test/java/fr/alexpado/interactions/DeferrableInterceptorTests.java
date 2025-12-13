@@ -4,6 +4,8 @@ import fr.alexpado.interactions.interfaces.routing.DeferrableRoute;
 import fr.alexpado.interactions.interfaces.routing.Request;
 import fr.alexpado.interactions.interfaces.routing.Route;
 import fr.alexpado.interactions.internal.DeferrableInterceptor;
+import fr.alexpado.interactions.structure.Endpoint;
+import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
@@ -41,7 +43,9 @@ class DeferrableInterceptorTests {
     @DisplayName("preHandle() should do nothing if route is not DeferrableRoute")
     void preHandle_shouldIgnoreNormalRoute() {
 
-        Optional<Object> result = this.interceptor.preHandle(this.normalRoute, this.request);
+        Endpoint<Interaction> endpoint = new Endpoint<>(this.normalRoute, null, Interaction.class);
+
+        Optional<Object> result = this.interceptor.preHandle(endpoint, this.request);
 
         assertTrue(result.isEmpty());
         verifyNoInteractions(this.request);
@@ -61,8 +65,10 @@ class DeferrableInterceptorTests {
         when(this.event.deferReply(true)).thenReturn(action);
         when(action.complete()).thenReturn(hook);
 
+        Endpoint<Interaction> endpoint = new Endpoint<>(this.deferrableRoute, null, Interaction.class);
+
         // Act
-        Optional<Object> result = this.interceptor.preHandle(this.deferrableRoute, this.request);
+        Optional<Object> result = this.interceptor.preHandle(endpoint, this.request);
 
         // Assert
         assertTrue(result.isEmpty()); // Should not short-circuit
@@ -77,8 +83,10 @@ class DeferrableInterceptorTests {
         when(this.request.getEvent()).thenReturn(this.event);
         when(this.deferrableRoute.isDeferred()).thenReturn(false);
 
+        Endpoint<Interaction> endpoint = new Endpoint<>(this.deferrableRoute, null, Interaction.class);
+
         // Act
-        this.interceptor.preHandle(this.deferrableRoute, this.request);
+        this.interceptor.preHandle(endpoint, this.request);
 
         // Assert
         verify(this.event, never()).deferReply(anyBoolean());

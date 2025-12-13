@@ -101,7 +101,7 @@ public class InteractionRouter implements RouteResolver {
         Endpoint<?> rawEndpoint = this.endpoints.get(uri);
 
         if (rawEndpoint != null) {
-            return Optional.of(rawEndpoint);
+            return java.util.Optional.of(rawEndpoint);
         }
 
         for (RouteResolver resolver : this.resolvers) {
@@ -145,7 +145,7 @@ public class InteractionRouter implements RouteResolver {
         Route           route   = endpoint.route();
         RouteHandler<T> handler = endpoint.handler();
 
-        Optional<Object> preHandleResult = this.preHandle(route, request);
+        Optional<Object> preHandleResult = this.preHandle(endpoint, request);
 
         if (preHandleResult.isPresent()) {
             return preHandleResult.get();
@@ -153,7 +153,7 @@ public class InteractionRouter implements RouteResolver {
 
         Object result = handler.handle(request);
 
-        return this.postHandle(route, request, result).orElse(result);
+        return this.postHandle(endpoint, request, result).orElse(result);
     }
 
     private <T extends Interaction> Optional<Endpoint<T>> localResolve(Request<T> request) {
@@ -178,10 +178,10 @@ public class InteractionRouter implements RouteResolver {
         return (Endpoint<T>) endpoint;
     }
 
-    private Optional<Object> preHandle(Route route, Request<?> request) {
+    private <T extends Interaction> Optional<Object> preHandle(Endpoint<T> endpoint, Request<T> request) {
 
         for (Interceptor interceptor : this.interceptors) {
-            Optional<Object> opt = interceptor.preHandle(route, request);
+            Optional<Object> opt = interceptor.preHandle(endpoint, request);
             if (opt.isPresent()) {
                 return opt;
             }
@@ -190,10 +190,10 @@ public class InteractionRouter implements RouteResolver {
         return Optional.empty();
     }
 
-    private Optional<Object> postHandle(Route route, Request<?> request, Object result) {
+    private <T extends Interaction> Optional<Object> postHandle(Endpoint<T> endpoint, Request<T> request, Object result) {
 
         for (Interceptor interceptor : this.interceptors) {
-            Optional<Object> opt = interceptor.postHandle(route, request, result);
+            Optional<Object> opt = interceptor.postHandle(endpoint, request, result);
             if (opt.isPresent()) {
                 return opt;
             }
