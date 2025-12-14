@@ -105,6 +105,14 @@ class SlashRouteResolverTests {
     }
 
     @Test
+    @DisplayName("registerController() should succeed with multiple options")
+    void registerController_shouldRegisterOptions() {
+
+        SlashRouteResolver resolver = new SlashRouteResolver();
+        assertDoesNotThrow(() -> resolver.registerController(new OptionOrderController()));
+    }
+
+    @Test
     @DisplayName("resolve() should resolve named completion provider")
     void resolve_shouldResolveNamedProvider() {
 
@@ -185,6 +193,32 @@ class SlashRouteResolverTests {
                 }
         )
         public String named() {
+
+            return "";
+        }
+
+    }
+
+    static class OptionOrderController {
+
+        @Slash(
+                name = "orderer",
+                description = "d",
+                options = {
+                        @Option(
+                                name = "opt1",
+                                description = "d",
+                                type = OptionType.STRING,
+                                required = true
+                        ),
+                        @Option(
+                                name = "opt2",
+                                description = "d",
+                                type = OptionType.STRING
+                        )
+                }
+        )
+        public String ordered() {
 
             return "";
         }

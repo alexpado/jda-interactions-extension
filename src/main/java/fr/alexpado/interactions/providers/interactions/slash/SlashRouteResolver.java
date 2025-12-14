@@ -213,7 +213,6 @@ public class SlashRouteResolver implements RouteResolver {
     private void applyOptions(Consumer<OptionData> consumer, Option[] options) {
 
         Stream.of(options)
-              .sorted(Comparator.comparing(Option::required))
               .map(this::createOptionData)
               .forEach(consumer);
     }
