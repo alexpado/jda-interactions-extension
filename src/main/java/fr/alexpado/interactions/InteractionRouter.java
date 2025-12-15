@@ -33,8 +33,8 @@ public class InteractionRouter implements RouteResolver {
     public InteractionRouter() {
 
         this.endpoints    = new HashMap<>();
-        this.interceptors = new HashSet<>();
-        this.resolvers    = new HashSet<>();
+        this.interceptors = new LinkedHashSet<>();
+        this.resolvers    = new LinkedHashSet<>();
 
         // Ensure the developers don't have to support deferring themselves.
         this.registerInterceptor(new DeferrableInterceptor());

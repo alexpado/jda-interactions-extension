@@ -35,7 +35,7 @@ public class SlashRouteResolver implements RouteResolver {
     private final Map<URI, Endpoint<SlashCommandInteraction>>        slashEndpoints      = new HashMap<>();
     private final Map<URI, Endpoint<CommandAutoCompleteInteraction>> completionEndpoints = new HashMap<>();
     private final Map<String, CompletionProvider>                    completionProviders = new HashMap<>();
-    private final Set<CommandData>                                   commands            = new HashSet<>();
+    private final Set<CommandData>                                   commands            = new LinkedHashSet<>();
 
     public Set<CommandData> getJdaCommands() {
 
