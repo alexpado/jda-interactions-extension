@@ -1,10 +1,10 @@
 package fr.alexpado.interactions.providers;
 
 import fr.alexpado.interactions.annotations.Attribute;
+import fr.alexpado.interactions.annotations.Param;
 import fr.alexpado.interactions.exceptions.InteractionException;
 import fr.alexpado.interactions.interfaces.handlers.RouteHandler;
 import fr.alexpado.interactions.interfaces.routing.Request;
-import fr.alexpado.jda.interactions.annotations.Param;
 import net.dv8tion.jda.api.interactions.Interaction;
 import org.jetbrains.annotations.NotNull;
 
