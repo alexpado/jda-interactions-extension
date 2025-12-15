@@ -20,6 +20,7 @@ import java.util.function.Supplier;
  * @param <U>
  *         The type of the {@link Interaction}.
  */
+@Deprecated
 public abstract class DefaultInteractionContainer<T extends InteractionTarget<U> & MetaContainer, U extends Interaction> implements InteractionContainer<T, U>, InteractionEventHandler<U> {
 
     private final Map<URI, T>                                   interactions;

@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 /**
  * Class grouping all kind of utility methods
  */
+@Deprecated
 public final class InteractionUtils {
 
     private InteractionUtils() {}

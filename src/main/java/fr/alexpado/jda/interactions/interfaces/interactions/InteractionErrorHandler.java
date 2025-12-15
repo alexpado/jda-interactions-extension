@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.interactions.Interaction;
 /**
  * Interface representing an error handler for all {@link InteractionContainer}.
  */
+@Deprecated
 public interface InteractionErrorHandler {
 
     /**

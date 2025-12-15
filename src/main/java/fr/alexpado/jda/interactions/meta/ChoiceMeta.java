@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.Command;
 /**
  * Class version of the annotation {@link Choice}.
  */
+@Deprecated
 public class ChoiceMeta {
 
     private final String id;

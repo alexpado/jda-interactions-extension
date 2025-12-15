@@ -7,5 +7,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 /**
  * Interface representing an {@link InteractionTarget} dedicated to {@link ButtonInteraction} events.
  */
+@Deprecated
 public interface ButtonInteractionTarget extends InteractionTarget<ButtonInteraction>, MetaContainer {
 }

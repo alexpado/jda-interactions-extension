@@ -11,6 +11,7 @@ import java.util.Map;
  * @param <T>
  *         Type of the event that will trigger this {@link InteractionTarget}.
  */
+@Deprecated
 public interface InteractionTarget<T extends Interaction> {
 
     /**

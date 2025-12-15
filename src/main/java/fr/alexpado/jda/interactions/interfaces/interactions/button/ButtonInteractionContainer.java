@@ -8,5 +8,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 /**
  * Interface representing an {@link InteractionContainer} dedicated to {@link ButtonInteraction} events.
  */
+@Deprecated
 public interface ButtonInteractionContainer extends InteractionContainer<ButtonInteractionTarget, ButtonInteraction>, InteractionEventHandler<ButtonInteraction>, InteractionResponseHandler {
 }

@@ -10,6 +10,7 @@ import java.lang.reflect.Parameter;
 /**
  * Exception thrown when the injecting the value for a parameter annotated with {@link Param} fails.
  */
+@Deprecated
 public class InteractionInjectionException extends Exception implements DiscordEmbeddable {
 
     private final Class<?>  source;

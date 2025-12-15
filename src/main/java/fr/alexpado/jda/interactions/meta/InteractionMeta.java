@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * Class version of the annotation {@link Interact}.
  */
+@Deprecated
 public record InteractionMeta(
         String name,
         String description,

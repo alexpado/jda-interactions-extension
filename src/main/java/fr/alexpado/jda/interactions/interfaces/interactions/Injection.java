@@ -10,6 +10,7 @@ import java.util.function.Supplier;
  * @param <U>
  *         The type of the mapped value.
  */
+@Deprecated
 public interface Injection<T, U> {
 
     /**

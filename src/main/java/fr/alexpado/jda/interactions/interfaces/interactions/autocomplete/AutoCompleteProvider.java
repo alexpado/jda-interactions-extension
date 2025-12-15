@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * Interface representing an object capable of providing auto-completion.
  */
+@Deprecated
 public interface AutoCompleteProvider {
 
     /**

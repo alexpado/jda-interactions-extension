@@ -23,6 +23,7 @@ import java.util.function.Consumer;
  * This may even be more problematic when the response is from an {@link SlashCommandInteraction} where the user expect
  * an answer explicitly, just as Discord, so a default response will be sent instead.
  */
+@Deprecated
 public class SinkResponseHandler implements InteractionResponseHandler {
 
     /**

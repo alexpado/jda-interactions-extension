@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
  * Interface representing an object being able to handle a specific type of interaction response defined by
  * {@link #canHandle(DispatchEvent, Object)}.
  */
+@Deprecated
 public interface InteractionResponseHandler {
 
     /**

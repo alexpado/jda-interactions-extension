@@ -12,6 +12,7 @@ import java.net.URI;
  * @param <T>
  *         Type of event that should be converted.
  */
+@Deprecated
 public interface InteractionEventHandler<T extends Interaction> {
 
     /**

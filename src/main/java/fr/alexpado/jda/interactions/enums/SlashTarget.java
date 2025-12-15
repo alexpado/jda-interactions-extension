@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 /**
  * Enum allowing to define the target for an {@link InteractionTarget}.
  */
+@Deprecated
 public enum SlashTarget {
 
     /**

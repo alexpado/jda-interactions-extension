@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 /**
  * Interface representing an {@link InteractionTarget} dedicated to {@link CommandAutoCompleteInteraction} events.
  */
+@Deprecated
 public interface AutocompleteInteractionTarget extends InteractionTarget<CommandAutoCompleteInteraction>, MetaContainer {
 
     /**

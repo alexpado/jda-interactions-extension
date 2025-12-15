@@ -16,6 +16,7 @@ import java.util.Map;
  * @param <T>
  *         The type of the {@link Interaction}.
  */
+@Deprecated
 public record DispatchEvent<T extends Interaction>(
         ITimedAction timedAction,
         URI path,

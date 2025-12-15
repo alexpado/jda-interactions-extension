@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 /**
  * Class implementing {@link InteractionTarget} being the execution target of {@link SlashCommandInteraction}.
  */
+@Deprecated
 public class AutocompleteInteractionTargetImpl implements AutocompleteInteractionTarget {
 
     private final InteractionMeta                   meta;

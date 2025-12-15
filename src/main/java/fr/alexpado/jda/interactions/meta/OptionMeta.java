@@ -14,6 +14,7 @@ import java.util.List;
 /**
  * Class version of the annotation {@link Option}.
  */
+@Deprecated
 public class OptionMeta {
 
     private final String           name;

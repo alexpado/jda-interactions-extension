@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 /**
  * Class implementing {@link InteractionTarget} being the execution target of {@link SlashCommandInteraction}.
  */
+@Deprecated
 public class SlashInteractionTargetImpl extends InteractionTargetImpl<SlashCommandInteraction> implements SlashInteractionTarget {
 
     /**

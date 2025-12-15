@@ -8,5 +8,6 @@ import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 /**
  * Interface representing an {@link InteractionContainer} dedicated to {@link CommandAutoCompleteInteraction} events.
  */
+@Deprecated
 public interface AutocompleteInteractionContainer extends InteractionContainer<AutocompleteInteractionTarget, CommandAutoCompleteInteraction>, InteractionEventHandler<CommandAutoCompleteInteraction>, InteractionResponseHandler {
 }

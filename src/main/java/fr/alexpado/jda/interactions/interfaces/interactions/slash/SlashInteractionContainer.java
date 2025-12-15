@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * Interface representing an {@link InteractionContainer} dedicated to {@link SlashCommandInteraction} events.
  */
+@Deprecated
 public interface SlashInteractionContainer extends InteractionContainer<SlashInteractionTarget, SlashCommandInteraction>, InteractionEventHandler<SlashCommandInteraction>, InteractionResponseHandler {
 
     /**

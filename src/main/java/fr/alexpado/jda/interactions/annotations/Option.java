@@ -19,6 +19,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
+@Deprecated
 public @interface Option {
 
     /**

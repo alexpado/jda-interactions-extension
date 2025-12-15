@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * Bridging class allowing to plug this library logic into {@link JDA} to register slash interaction to Discord.
  */
+@Deprecated
 public class InteractionCommandData extends CommandDataImpl {
 
     private final Map<String, InteractionGroupData>      groups      = new HashMap<>();

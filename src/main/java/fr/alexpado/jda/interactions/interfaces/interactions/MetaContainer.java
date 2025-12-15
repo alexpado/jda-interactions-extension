@@ -5,6 +5,7 @@ import fr.alexpado.jda.interactions.meta.InteractionMeta;
 /**
  * Interface representing an object capable of holding {@link InteractionMeta}.
  */
+@Deprecated
 public interface MetaContainer {
 
     /**

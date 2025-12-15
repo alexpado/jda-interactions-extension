@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 /**
  * Class being used as the default {@link InteractionErrorHandler} if not overridden.
  */
+@Deprecated
 public class DefaultErrorHandler implements InteractionErrorHandler {
 
     /**

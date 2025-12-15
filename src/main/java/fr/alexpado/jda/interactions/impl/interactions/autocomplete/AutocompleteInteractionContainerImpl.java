@@ -21,6 +21,7 @@ import java.util.List;
  * Class implementing {@link InteractionContainer} handling {@link CommandAutoCompleteInteraction} with target of type
  * {@link AutocompleteInteractionTarget}.
  */
+@Deprecated
 public class AutocompleteInteractionContainerImpl extends DefaultInteractionContainer<AutocompleteInteractionTarget, CommandAutoCompleteInteraction> implements AutocompleteInteractionContainer {
 
     /**

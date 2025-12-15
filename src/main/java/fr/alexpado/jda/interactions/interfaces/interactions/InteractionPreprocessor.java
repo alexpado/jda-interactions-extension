@@ -10,6 +10,7 @@ import java.util.Optional;
 /**
  * Interface representing an object being able to preprocess a {@link DispatchEvent}.
  */
+@Deprecated
 public interface InteractionPreprocessor {
 
     /**

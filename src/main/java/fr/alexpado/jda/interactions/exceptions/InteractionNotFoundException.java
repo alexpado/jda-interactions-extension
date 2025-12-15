@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.Interaction;
  *
  * @see InteractionContainer#dispatch(DispatchEvent)
  */
+@Deprecated
 public class InteractionNotFoundException extends RuntimeException implements DiscordEmbeddable {
 
     private final InteractionContainer<?, ?> container;

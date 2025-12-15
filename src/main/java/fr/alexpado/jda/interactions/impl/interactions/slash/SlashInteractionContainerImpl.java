@@ -30,6 +30,7 @@ import java.util.Map;
  * Class implementing {@link InteractionContainer} handling {@link SlashCommandInteraction} with target of type
  * {@link SlashInteractionTarget}.
  */
+@Deprecated
 public class SlashInteractionContainerImpl extends DefaultInteractionContainer<SlashInteractionTarget, SlashCommandInteraction> implements SlashInteractionContainer {
 
     private final Map<String, InteractionCommandData> dataMap;

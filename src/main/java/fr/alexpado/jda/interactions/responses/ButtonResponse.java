@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 /**
  * Interface representing the default response for a {@link ButtonInteractionTarget}.
  */
+@Deprecated
 public interface ButtonResponse {
 
     /**

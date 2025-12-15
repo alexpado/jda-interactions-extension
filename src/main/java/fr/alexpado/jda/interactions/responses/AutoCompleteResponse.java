@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * Interface representing the default response for a {@link CommandAutoCompleteInteraction}.
  */
+@Deprecated
 public interface AutoCompleteResponse {
 
     /**

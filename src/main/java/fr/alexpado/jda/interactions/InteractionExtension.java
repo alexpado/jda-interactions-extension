@@ -43,6 +43,7 @@ import java.util.*;
  * @see InteractionExtension#run(String, Class, Interaction)
  */
 @SuppressWarnings("unused")
+@Deprecated
 public class InteractionExtension extends ListenerAdapter {
 
     private final Map<Class<? extends Interaction>, InteractionEventHandler<?>> handlers;

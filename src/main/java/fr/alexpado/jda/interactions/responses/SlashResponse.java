@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 /**
  * Interface representing the default response for a {@link SlashInteractionTarget}.
  */
+@Deprecated
 public interface SlashResponse {
 
     /**

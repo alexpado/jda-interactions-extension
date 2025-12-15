@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 /**
  * Class implementing {@link InteractionTarget} being the execution target of {@link ButtonInteraction}.
  */
+@Deprecated
 public class ButtonInteractionTargetImpl extends InteractionTargetImpl<ButtonInteraction> implements ButtonInteractionTarget {
 
     /**

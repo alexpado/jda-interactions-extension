@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation allowing to list all choices available for an {@link Option}.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 public @interface Choice {

@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 /**
  * Interface representing an object that can be represented as a {@link MessageEmbed}.
  */
+@Deprecated
 public interface DiscordEmbeddable {
 
     /**

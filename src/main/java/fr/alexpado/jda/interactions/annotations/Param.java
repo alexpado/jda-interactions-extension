@@ -12,6 +12,7 @@ import java.lang.reflect.Parameter;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER})
+@Deprecated
 public @interface Param {
 
     /**

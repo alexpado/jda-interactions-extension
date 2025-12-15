@@ -7,5 +7,6 @@ import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 /**
  * Interface representing an {@link InteractionTarget} dedicated to {@link SlashCommandInteraction} events.
  */
+@Deprecated
 public interface SlashInteractionTarget extends InteractionTarget<SlashCommandInteraction>, MetaContainer {
 }

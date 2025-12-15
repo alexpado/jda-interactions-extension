@@ -29,6 +29,7 @@ import java.util.function.Consumer;
  * Class implementing {@link InteractionContainer} handling {@link ButtonInteraction} with target of type
  * {@link ButtonInteractionTarget}.
  */
+@Deprecated
 public class ButtonInteractionContainerImpl extends DefaultInteractionContainer<ButtonInteractionTarget, ButtonInteraction> implements ButtonInteractionContainer {
 
     /**

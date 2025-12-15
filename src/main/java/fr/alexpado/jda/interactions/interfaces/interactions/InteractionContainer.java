@@ -16,6 +16,7 @@ import java.util.function.Supplier;
  * @param <V>
  *         The type of event the {@link InteractionTarget} is capable of handling.
  */
+@Deprecated
 public interface InteractionContainer<T extends InteractionTarget<V>, V extends Interaction> {
 
     /**

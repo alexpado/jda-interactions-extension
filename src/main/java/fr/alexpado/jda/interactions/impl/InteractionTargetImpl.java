@@ -31,6 +31,7 @@ import java.util.function.Supplier;
  * @param <T>
  *         The type of the interaction
  */
+@Deprecated
 public class InteractionTargetImpl<T extends Interaction> implements InteractionTarget<T>, MetaContainer {
 
     private static final Map<Class<?>, Class<?>> PRIMITIVE_MAP = new HashMap<>() {{

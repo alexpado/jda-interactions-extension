@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
  * {@link InteractionDeclarationException} is an exception thrown when an {@link InteractionTarget} had a parameter in
  * its targeted method, but the parameter isn't annotated with {@link Param}.
  */
+@Deprecated
 public class InteractionDeclarationException extends RuntimeException implements DiscordEmbeddable {
 
     private final Class<?> declarationClass;
