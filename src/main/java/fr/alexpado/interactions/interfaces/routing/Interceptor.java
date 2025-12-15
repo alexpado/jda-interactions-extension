@@ -1,5 +1,6 @@
 package fr.alexpado.interactions.interfaces.routing;
 
+import fr.alexpado.interactions.interfaces.handlers.ErrorHandler;
 import fr.alexpado.interactions.interfaces.handlers.RouteHandler;
 import fr.alexpado.interactions.structure.Endpoint;
 import org.jetbrains.annotations.NotNull;
@@ -39,10 +40,11 @@ public interface Interceptor {
      * @param request
      *         The interaction request.
      * @param result
-     *         The result object returned by the handler.
+     *         The result object returned by the handler, or an exception if the execution failed.
      *
      * @return An {@link Optional} containing a new result object to replace the one returned by the handler. If the
-     *         optional is empty, the original result is used.
+     *         optional is empty, the original result is used. <b>Important:</b> If the {@code result} is an exception,
+     *         the result returned by this method will always be ignored in favor of the {@link ErrorHandler}.
      */
     default Optional<Object> postHandle(@NotNull Endpoint<?> endpoint, @NotNull Request<?> request, @NotNull Object result) {
 

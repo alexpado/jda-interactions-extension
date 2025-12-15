@@ -151,9 +151,13 @@ public class InteractionRouter implements RouteResolver {
             return preHandleResult.get();
         }
 
-        Object result = handler.handle(request);
-
-        return this.postHandle(endpoint, request, result).orElse(result);
+        try {
+            Object result = handler.handle(request);
+            return this.postHandle(endpoint, request, result).orElse(result);
+        } catch (RuntimeException e) {
+            this.postHandle(endpoint, request, e);
+            throw e;
+        }
     }
 
     private <T extends Interaction> Optional<Endpoint<T>> localResolve(Request<T> request) {
