@@ -110,14 +110,15 @@ public class InteractionManager {
         Request<T> request = null;
 
         try {
-            List<SchemeAdapter<?>> potentialAdapters = this.adapters.get(event.getClass());
-
-            if (potentialAdapters == null) {
-                throw new UnsupportedInteractionException(
-                        "No adapter found for event type %s".formatted(event.getClass().getName()),
-                        event
-                );
-            }
+            List<SchemeAdapter<?>> potentialAdapters = this
+                    .findAdapter(event.getClass())
+                    .orElseThrow(() -> new UnsupportedInteractionException(
+                            String.format(
+                                    "No adapter found for event type %s",
+                                    event.getClass().getName()
+                            ),
+                            event
+                    ));
 
             for (SchemeAdapter<?> genericAdapter : potentialAdapters) {
                 SchemeAdapter<T> adapter = (SchemeAdapter<T>) genericAdapter;
@@ -134,6 +135,16 @@ public class InteractionManager {
         } catch (Throwable e) {
             this.errorHandler.handle(e, event, request);
         }
+    }
+
+    private Optional<List<SchemeAdapter<?>>> findAdapter(Class<?> targetClass) {
+
+        for (Class<? extends Interaction> interactionClass : this.adapters.keySet()) {
+            if (interactionClass.isAssignableFrom(targetClass)) {
+                return Optional.of(this.adapters.get(interactionClass));
+            }
+        }
+        return Optional.empty();
     }
 
 }
