@@ -1,11 +1,16 @@
 package fr.alexpado.interactions;
 
 import fr.alexpado.interactions.exceptions.ResultHandlerNotFoundException;
+import fr.alexpado.interactions.exceptions.UnsupportedResultException;
 import fr.alexpado.interactions.interfaces.handlers.ResponseHandler;
 import fr.alexpado.interactions.interfaces.routing.Request;
+import net.dv8tion.jda.api.interactions.callbacks.IAutoCompleteCallback;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.interactions.commands.Command;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,6 +60,35 @@ public class ResponseManager {
         if (result == null) {
             throw new NullPointerException("Cannot handle null result");
         }
+
+        // Handling this ourselves... I guess it's fine as it is very specific in the format
+        if (request.getEvent() instanceof IAutoCompleteCallback callback) {
+            if (!(result instanceof Collection<?> collection)) {
+                throw new UnsupportedResultException(
+                        "Unable to reply to autocompletion request: Result is not a collection",
+                        request,
+                        result
+                );
+            }
+
+            List<Command.Choice> choices = collection
+                    .stream()
+                    .filter(Command.Choice.class::isInstance)
+                    .map(Command.Choice.class::cast)
+                    .toList();
+
+            if (choices.size() != collection.size()) {
+                throw new UnsupportedResultException(
+                        "Unable to reply to autocompletion request: Some element in the collection were not of the expected type.",
+                        request,
+                        result
+                );
+            }
+
+            callback.replyChoices(choices).queue();
+            return;
+        }
+
 
         if (!(request.getEvent() instanceof IReplyCallback)) {
             return;
