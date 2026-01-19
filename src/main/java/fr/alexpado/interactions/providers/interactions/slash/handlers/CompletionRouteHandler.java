@@ -3,9 +3,11 @@ package fr.alexpado.interactions.providers.interactions.slash.handlers;
 import fr.alexpado.interactions.interfaces.handlers.RouteHandler;
 import fr.alexpado.interactions.interfaces.routing.Request;
 import fr.alexpado.interactions.providers.interactions.slash.interfaces.CompletionProvider;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 public class CompletionRouteHandler implements RouteHandler<CommandAutoCompleteInteraction> {
@@ -20,6 +22,17 @@ public class CompletionRouteHandler implements RouteHandler<CommandAutoCompleteI
     @NotNull
     @Override
     public Object handle(@NotNull Request<CommandAutoCompleteInteraction> request) {
+
+        List<Command.Choice> choices = this.complete(request);
+
+        if (choices.size() > 25) {
+            return choices.subList(0, 25);
+        }
+
+        return choices;
+    }
+
+    private List<Command.Choice> complete(@NotNull Request<CommandAutoCompleteInteraction> request) {
 
         if (this.provider.isFiltered()) {
             return this.provider.complete(request).toList();
